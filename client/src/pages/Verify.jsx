@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Search, ShieldCheck, ShieldX, Award, Calendar, BookOpen } from 'lucide-react';
+import { Search, ShieldCheck, ShieldX, Award, Calendar, BookOpen, Mail, GraduationCap } from 'lucide-react';
 import api from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 
@@ -29,6 +29,10 @@ const Verify = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (paramId) verify(paramId);
+  }, [paramId]);
 
   return (
     <div className="py-12 min-h-[70vh]">
@@ -84,8 +88,17 @@ const Verify = () => {
                 <p className="text-slate-600 mb-6">This is an authentic Campus Code Labs certificate</p>
                 <div className="text-left space-y-3 bg-brand-50 dark:bg-brand-900/50 rounded-xl p-6">
                   <p className="flex items-center gap-2"><BookOpen className="w-4 h-4 text-brand-600" /> <strong>Student:</strong> {result.data.studentName}</p>
+                  {result.data.certificateNo && <p><strong>Certificate No:</strong> {result.data.certificateNo}</p>}
+                  {result.data.email && <p className="flex items-center gap-2"><Mail className="w-4 h-4 text-brand-600" /> <strong>Email:</strong> {result.data.email}</p>}
+                  {result.data.collegeName && <p className="flex items-center gap-2"><GraduationCap className="w-4 h-4 text-brand-600" /> <strong>College:</strong> {result.data.collegeName}</p>}
+                  {result.data.branch && <p><strong>Branch:</strong> {result.data.branch}</p>}
+                  {result.data.year && <p><strong>Year:</strong> {result.data.year}</p>}
                   <p className="flex items-center gap-2"><Award className="w-4 h-4 text-brand-600" /> <strong>Internship:</strong> {result.data.courseName}</p>
-                  <p className="flex items-center gap-2"><Calendar className="w-4 h-4 text-brand-600" /> <strong>Issue Date:</strong> {new Date(result.data.completionDate).toLocaleDateString()}</p>
+                  {(result.data.internshipFromDate && result.data.internshipToDate) && (
+                    <p><strong>Period:</strong> {new Date(result.data.internshipFromDate).toLocaleDateString()} to {new Date(result.data.internshipToDate).toLocaleDateString()}</p>
+                  )}
+                  {result.data.projectTitle && <p><strong>Project:</strong> {result.data.projectTitle}</p>}
+                  <p className="flex items-center gap-2"><Calendar className="w-4 h-4 text-brand-600" /> <strong>Certificate Date:</strong> {new Date(result.data.completionDate).toLocaleDateString()}</p>
                   <p><strong>Certificate ID:</strong> {result.data.certificateId}</p>
                   {result.data.internshipId && <p><strong>Internship ID:</strong> {result.data.internshipId}</p>}
                   <p><strong>Status:</strong> <span className="text-green-600 font-semibold">{result.data.status}</span></p>

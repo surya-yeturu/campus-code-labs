@@ -58,14 +58,16 @@ const Navbar = () => {
             </button>
             {user ? (
               <>
-                <Link to={user.role === 'admin' ? '/admin' : '/dashboard'} className="btn-primary text-sm py-2 hidden sm:inline-flex">
-                  Dashboard
-                </Link>
+                {user.role === 'admin' && (
+                  <Link to="/admin" className="btn-primary text-sm py-2 hidden sm:inline-flex">
+                    Admin Dashboard
+                  </Link>
+                )}
                 <button onClick={logout} className="text-sm text-slate-600 hover:text-brand-600 hidden sm:block px-3">Logout</button>
               </>
             ) : (
               <>
-                <Link to="/login" className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-brand-600 hidden sm:block px-3">Student Login</Link>
+                <Link to="/login" className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-brand-600 hidden sm:block px-3">Admin Login</Link>
                 <Link to="/apply" className="btn-primary text-sm py-2">Apply Now</Link>
               </>
             )}

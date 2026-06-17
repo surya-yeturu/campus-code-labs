@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { IndianRupee, Upload, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -121,9 +121,9 @@ const ApplyPayment = () => {
         {isApproved ? (
           <div className="glass-card p-8 text-center">
             <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-            <h2 className="font-display text-xl font-bold text-green-600 mb-2">Enrollment Approved!</h2>
-            <p className="text-slate-600 mb-6">Check your email for login credentials and offer letter.</p>
-            <Link to="/login" className="btn-primary">Student Login</Link>
+            <h2 className="font-display text-xl font-bold text-green-600 mb-2">Application Approved!</h2>
+            <p className="text-slate-600 mb-2">Your offer letter and internship certificate have been sent to <strong>{email}</strong>.</p>
+            <p className="text-sm text-slate-500">Scan the QR code on your certificate to verify it anytime.</p>
           </div>
         ) : isSubmitted ? (
           <div className="glass-card p-8 text-center">

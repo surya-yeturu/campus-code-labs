@@ -2,31 +2,77 @@ import Certificate from '../models/Certificate.js';
 import Internship from '../models/Internship.js';
 import Course from '../models/Course.js';
 import User from '../models/User.js';
-import { generateCertificateId } from '../utils/generateId.js';
+import { generateCertificateId, generateCertificateNo } from '../utils/generateId.js';
 import { generateCertificatePDF } from './pdfService.js';
-import { uploadBuffer, uploadImageBuffer } from './storageService.js';
+import { uploadBuffer } from './storageService.js';
 import QRCode from 'qrcode';
 import { sendCertificateEmail } from './emailService.js';
 
-export const issueCertificateForInternship = async (internship, user, { sendEmail = true } = {}) => {
+const resolveApplicant = async (internship, applicant) => {
+  if (applicant?.fullName && applicant?.email) return applicant;
+
+  if (internship.studentFullName && internship.studentEmail) {
+    return {
+      fullName: internship.studentFullName,
+      email: internship.studentEmail,
+      collegeName: internship.collegeName,
+      branch: internship.branch,
+      year: internship.year,
+      internshipFromDate: internship.startDate,
+      internshipToDate: internship.endDate,
+      projectTitle: internship.projectTitle || '',
+      certificateDate: applicant?.certificateDate,
+    };
+  }
+
+  if (internship.user) {
+    const user = applicant?._id ? applicant : await User.findById(internship.user);
+    if (user) {
+      return {
+        fullName: user.fullName,
+        email: user.email,
+        collegeName: user.collegeName,
+        branch: user.branch,
+        year: user.year,
+        internshipFromDate: internship.startDate,
+        internshipToDate: internship.endDate,
+        projectTitle: internship.projectTitle || '',
+        certificateDate: applicant?.certificateDate,
+      };
+    }
+  }
+
+  throw new Error('Student details not found for certificate');
+};
+
+export const issueCertificateForInternship = async (internship, applicant, { sendEmail = true } = {}) => {
   if (internship.certificate) {
     const existing = await Certificate.findById(internship.certificate);
     if (existing) return existing;
   }
 
   const course = await Course.findById(internship.course._id || internship.course);
-  const student = user._id ? user : await User.findById(internship.user);
+  const student = await resolveApplicant(internship, applicant);
   const certificateId = generateCertificateId();
+  const certificateNo = generateCertificateNo();
   const verifyUrl = `${process.env.CLIENT_URL}/verify/${certificateId}`;
-  const issueDate = new Date();
+  const issueDate = student.certificateDate ? new Date(student.certificateDate) : new Date();
 
   const pdfBuffer = await generateCertificatePDF({
     studentName: student.fullName,
+    email: student.email,
+    collegeName: student.collegeName,
+    branch: student.branch,
+    year: student.year,
     courseName: course.title,
     internshipId: internship.internshipId,
     duration: internship.duration,
     certificateId,
+    certificateNo,
     issueDate,
+    internshipFromDate: student.internshipFromDate || internship.startDate,
+    internshipToDate: student.internshipToDate || internship.endDate,
+    projectTitle: student.projectTitle || internship.projectTitle || '',
     verifyUrl,
   });
 
@@ -35,11 +81,11 @@ export const issueCertificateForInternship = async (internship, user, { sendEmai
 
   try {
     const certUpload = await uploadBuffer(pdfBuffer, 'certificates', `${certificateId}.pdf`, 'application/pdf');
-    certificateUrl = certUpload.url;
+    certificateUrl = certUpload.url || certUpload.secure_url;
 
     const qrBuffer = await QRCode.toBuffer(verifyUrl, { width: 300 });
     const qrUpload = await uploadBuffer(qrBuffer, 'certificates', `${certificateId}-qr.png`, 'image/png');
-    qrCodeUrl = qrUpload.url;
+    qrCodeUrl = qrUpload.url || qrUpload.secure_url;
   } catch (err) {
     console.error('Certificate upload error:', err.message);
     certificateUrl = verifyUrl;
@@ -47,7 +93,16 @@ export const issueCertificateForInternship = async (internship, user, { sendEmai
 
   const certificate = await Certificate.create({
     certificateId,
-    user: student._id,
+    application: internship.application,
+    email: student.email,
+    collegeName: student.collegeName,
+    branch: student.branch,
+    year: student.year,
+    internshipFromDate: student.internshipFromDate || internship.startDate,
+    internshipToDate: student.internshipToDate || internship.endDate,
+    projectTitle: student.projectTitle || internship.projectTitle || '',
+    certificateNo,
+    user: internship.user || undefined,
     internship: internship._id,
     course: course._id,
     studentName: student.fullName,
@@ -63,7 +118,10 @@ export const issueCertificateForInternship = async (internship, user, { sendEmai
   await internship.save();
 
   if (sendEmail) {
-    await sendCertificateEmail(student, certificate, certificateUrl).catch(console.error);
+    await sendCertificateEmail(student, certificate, certificateUrl, {
+      filename: `Internship-Certificate-${certificate.certificateNo || certificate.certificateId}.pdf`,
+      content: pdfBuffer,
+    }).catch(console.error);
   }
 
   return certificate;
@@ -76,6 +134,7 @@ export const autoGenerateDueCertificates = async () => {
 
   const internships = await Internship.find({
     status: 'active',
+    user: { $exists: true, $ne: null },
     $or: [{ certificate: null }, { certificate: { $exists: false } }],
     endDate: { $lte: inThreeDays },
   }).populate('user');

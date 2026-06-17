@@ -13,9 +13,18 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const init = async () => {
       if (user?.token) {
+        if (user.role !== 'admin') {
+          logout();
+          setLoading(false);
+          return;
+        }
         try {
           const { data } = await api.get('/auth/profile');
           const updated = { ...user, ...data.data };
+          if (updated.role !== 'admin') {
+            logout();
+            return;
+          }
           setUser(updated);
           localStorage.setItem('learnovate_user', JSON.stringify(updated));
         } catch {

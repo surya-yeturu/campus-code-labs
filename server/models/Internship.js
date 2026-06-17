@@ -3,7 +3,14 @@ import mongoose from 'mongoose';
 const internshipSchema = new mongoose.Schema(
   {
     internshipId: { type: String, required: true, unique: true },
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    application: { type: mongoose.Schema.Types.ObjectId, ref: 'Application' },
+    studentFullName: { type: String, trim: true },
+    studentEmail: { type: String, trim: true, lowercase: true },
+    collegeName: { type: String, trim: true },
+    branch: { type: String, trim: true },
+    year: { type: String },
+    projectTitle: { type: String, trim: true, default: '' },
     course: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', required: true },
     duration: { type: String, required: true },
     startDate: { type: Date, required: true },

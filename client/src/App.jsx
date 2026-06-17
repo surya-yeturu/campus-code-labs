@@ -16,17 +16,6 @@ import Contact from './pages/Contact';
 import Verify from './pages/Verify';
 import Login from './pages/Login';
 
-import StudentDashboard from './pages/student/Dashboard';
-import MyInternships from './pages/student/MyInternships';
-import ApplyInternship from './pages/student/ApplyInternship';
-import Payments from './pages/student/Payments';
-import OfferLetter from './pages/student/OfferLetter';
-import Certificates from './pages/student/Certificates';
-import Notes from './pages/student/Notes';
-import Projects from './pages/student/Projects';
-import Documents from './pages/student/Documents';
-import Settings from './pages/student/Settings';
-
 import AdminDashboard from './pages/admin/AdminDashboard';
 import Students from './pages/admin/Students';
 import AdminPayments from './pages/admin/AdminPayments';
@@ -42,7 +31,7 @@ import AdminAnalytics from './pages/admin/AdminAnalytics';
 const AuthRedirect = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return <LoadingSpinner fullScreen />;
-  if (user) return <Navigate to={user.role === 'admin' ? '/admin' : '/dashboard'} replace />;
+  if (user?.role === 'admin') return <Navigate to="/admin" replace />;
   return children;
 };
 
@@ -64,20 +53,7 @@ function App() {
         <Route path="/verify/:certificateId" element={<Verify />} />
         <Route path="/login" element={<AuthRedirect><Login /></AuthRedirect>} />
         <Route path="/register" element={<Navigate to="/apply" replace />} />
-      </Route>
-
-      <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
-        <Route index element={<StudentDashboard />} />
-        <Route path="internships" element={<MyInternships />} />
-        <Route path="apply/:slug" element={<ApplyInternship />} />
-        <Route path="notes" element={<Notes />} />
-        <Route path="projects" element={<Projects />} />
-        <Route path="documents" element={<Documents />} />
-        <Route path="payments" element={<Payments />} />
-        <Route path="offer-letter" element={<Navigate to="/dashboard/documents" replace />} />
-        <Route path="certificates" element={<Certificates />} />
-        <Route path="complete" element={<Navigate to="/dashboard/certificates" replace />} />
-        <Route path="settings" element={<Settings />} />
+        <Route path="/dashboard/*" element={<Navigate to="/apply" replace />} />
       </Route>
 
       <Route path="/admin" element={<ProtectedRoute adminOnly><DashboardLayout admin /></ProtectedRoute>}>

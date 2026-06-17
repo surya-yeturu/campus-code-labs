@@ -1,14 +1,43 @@
 import Application from '../models/Application.js';
 import Course from '../models/Course.js';
 import { generateApplicationId } from '../utils/generateId.js';
-import { sendApplicationReceivedEmail } from '../services/emailService.js';
 import { processApplicationApproval } from '../services/enrollmentService.js';
 
 export const submitApplication = async (req, res) => {
-  const { fullName, email, phone, collegeName, branch, year, courseId, duration } = req.body;
+  const {
+    fullName,
+    email,
+    phone,
+    collegeName,
+    branch,
+    year,
+    courseId,
+    duration,
+    internshipFromDate,
+    internshipToDate,
+    projectTitle,
+    certificateDate,
+  } = req.body;
 
-  if (!fullName || !email || !phone || !collegeName || !branch || !year || !courseId || !duration) {
+  if (!fullName || !email || !phone || !collegeName || !branch || !year || !courseId || !duration || !internshipFromDate || !internshipToDate) {
     return res.status(400).json({ success: false, message: 'All required fields must be provided' });
+  }
+
+  const parsedFromDate = new Date(internshipFromDate);
+  const parsedToDate = new Date(internshipToDate);
+  if (Number.isNaN(parsedFromDate.getTime()) || Number.isNaN(parsedToDate.getTime())) {
+    return res.status(400).json({ success: false, message: 'Invalid internship dates' });
+  }
+  if (parsedToDate < parsedFromDate) {
+    return res.status(400).json({ success: false, message: 'To date must be after from date' });
+  }
+
+  let parsedDate = null;
+  if (certificateDate) {
+    parsedDate = new Date(certificateDate);
+    if (Number.isNaN(parsedDate.getTime())) {
+      return res.status(400).json({ success: false, message: 'Invalid certificate date' });
+    }
   }
 
   const course = await Course.findById(courseId);
@@ -26,13 +55,15 @@ export const submitApplication = async (req, res) => {
     collegeName,
     branch,
     year,
+    internshipFromDate: parsedFromDate,
+    internshipToDate: parsedToDate,
+    projectTitle: projectTitle || '',
+    ...(parsedDate ? { certificateDate: parsedDate } : {}),
     course: courseId,
     duration,
     resumeUrl,
     status: 'pending',
   });
-
-  sendApplicationReceivedEmail({ fullName, email, applicationId: application.applicationId }, course.title).catch(console.error);
 
   res.status(201).json({
     success: true,

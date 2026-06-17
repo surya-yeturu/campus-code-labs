@@ -75,20 +75,11 @@ npm run dev
 - Email: `admin@learnovate.com`
 - Password: `Admin@123456`
 
-### Email setup (required for approval/welcome emails)
+### Email setup (required for approval emails)
 
-Emails are **not sent** until you configure a provider in `server/.env`.
+Emails are **not sent** until SMTP is configured in `server/.env`.
 
-**Option A — Resend (recommended)**
-
-1. Create a free account at [resend.com](https://resend.com)
-2. Copy your API key → set `RESEND_API_KEY=re_xxxx` in `server/.env`
-3. For testing, use `EMAIL_FROM=Campus Code Labs <onboarding@resend.dev>`
-4. Restart the server (`npm run dev`)
-
-> Resend test mode only delivers to the email you signed up with until you verify a domain.
-
-**Option B — Gmail SMTP**
+**Gmail SMTP**
 
 1. Enable 2FA on your Google account
 2. Create an [App Password](https://myaccount.google.com/apppasswords)
@@ -114,7 +105,6 @@ Without either option, emails are logged to the **server console** only (mock mo
 | RAZORPAY_KEY_SECRET | Razorpay secret |
 | CLOUDINARY_* | Cloudinary credentials |
 | SMTP_* | Email configuration |
-| RESEND_API_KEY | Resend API key (recommended for email) |
 | EMAIL_FROM | Sender address for emails |
 | CLIENT_URL | Frontend URL for QR codes & emails |
 

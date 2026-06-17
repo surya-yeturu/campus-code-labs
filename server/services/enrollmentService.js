@@ -1,16 +1,13 @@
-import crypto from 'crypto';
 import Application from '../models/Application.js';
 import Payment from '../models/Payment.js';
-import User from '../models/User.js';
 import Internship from '../models/Internship.js';
 import Course from '../models/Course.js';
 import { generateInternshipId, generateReceipt } from '../utils/generateId.js';
 import { generateOfferLetterPDF } from '../services/pdfService.js';
 import { uploadBuffer } from '../services/storageService.js';
+import { issueCertificateForInternship } from '../services/certificateService.js';
 import {
-  sendPaymentApprovedEmail,
   sendOfferLetterEmail,
-  sendWelcomeCredentialsEmail,
 } from '../services/emailService.js';
 
 const parseDurationWeeks = (duration) => {
@@ -18,7 +15,11 @@ const parseDurationWeeks = (duration) => {
   return match ? parseInt(match[1], 10) : 8;
 };
 
-const generateTempPassword = () => crypto.randomBytes(4).toString('hex');
+const toAbsoluteUrl = (value) => {
+  if (!value) return '';
+  if (/^https?:\/\//i.test(value)) return value;
+  return `${(process.env.CLIENT_URL || '').replace(/\/$/, '')}${value.startsWith('/') ? value : `/${value}`}`;
+};
 
 export const processApplicationApproval = async (application, adminUser) => {
   const course = await Course.findById(application.course);
@@ -29,47 +30,46 @@ export const processApplicationApproval = async (application, adminUser) => {
   if (!payment) throw new Error('Payment record not found');
   if (payment.status !== 'submitted') throw new Error('Payment must be submitted before approval');
 
-  let user = await User.findOne({ email: application.email });
-  let tempPassword = null;
-
-  if (!user) {
-    tempPassword = generateTempPassword();
-    user = await User.create({
-      fullName: application.fullName,
-      email: application.email,
-      phone: application.phone,
-      collegeName: application.collegeName,
-      branch: application.branch,
-      year: application.year,
-      password: tempPassword,
-    });
-  } else {
-    user.fullName = application.fullName;
-    user.phone = application.phone;
-    user.collegeName = application.collegeName;
-    user.branch = application.branch;
-    user.year = application.year;
-    await user.save();
-  }
+  const applicant = {
+    fullName: application.fullName,
+    email: application.email,
+    collegeName: application.collegeName,
+    branch: application.branch,
+    year: application.year,
+    certificateDate: application.certificateDate,
+    internshipFromDate: application.internshipFromDate,
+    internshipToDate: application.internshipToDate,
+    projectTitle: application.projectTitle || '',
+  };
 
   const weeks = parseDurationWeeks(application.duration);
-  const startDate = new Date();
-  const endDate = new Date();
-  endDate.setDate(endDate.getDate() + weeks * 7);
+  const startDate = applicant.internshipFromDate ? new Date(applicant.internshipFromDate) : new Date();
+  const endDate = applicant.internshipToDate ? new Date(applicant.internshipToDate) : new Date(startDate);
+  if (!applicant.internshipToDate) {
+    endDate.setDate(endDate.getDate() + weeks * 7);
+  }
 
   const internship = await Internship.create({
     internshipId: generateInternshipId(),
-    user: user._id,
+    application: application._id,
+    studentFullName: applicant.fullName,
+    studentEmail: applicant.email,
+    collegeName: applicant.collegeName,
+    branch: applicant.branch,
+    year: applicant.year,
+    projectTitle: applicant.projectTitle,
     course: course._id,
     duration: application.duration,
     startDate,
     endDate,
-    status: 'active',
+    status: 'completed',
   });
 
   const pdfBuffer = await generateOfferLetterPDF({
-    studentName: user.fullName,
-    collegeName: user.collegeName,
+    studentName: applicant.fullName,
+    collegeName: applicant.collegeName,
+    year: applicant.year,
+    branch: applicant.branch,
     courseName: course.title,
     duration: application.duration,
     startDate,
@@ -79,38 +79,45 @@ export const processApplicationApproval = async (application, adminUser) => {
 
   let offerLetterUrl = '';
   try {
-    const upload = await uploadBuffer(pdfBuffer, 'offer-letters', internship.internshipId);
-    offerLetterUrl = upload.secure_url;
+    const upload = await uploadBuffer(
+      pdfBuffer,
+      'offer-letters',
+      `${internship.internshipId}.pdf`,
+      'application/pdf'
+    );
+    offerLetterUrl = toAbsoluteUrl(upload.secure_url || upload.url);
   } catch (err) {
     console.error('Offer letter upload failed:', err.message);
-    offerLetterUrl = `${process.env.CLIENT_URL}/dashboard/offer-letter`;
+    offerLetterUrl = '';
   }
 
   internship.offerLetterUrl = offerLetterUrl;
   internship.payment = payment._id;
   await internship.save();
 
-  payment.user = user._id;
   payment.internship = internship._id;
   payment.status = 'verified';
   payment.verifiedBy = adminUser._id;
   payment.verifiedAt = new Date();
   await payment.save();
 
-  application.user = user._id;
+  const certificate = await issueCertificateForInternship(internship, applicant, { sendEmail: true });
+
   application.internship = internship._id;
+  application.certificate = certificate._id;
   application.status = 'approved';
   await application.save();
 
   await Course.findByIdAndUpdate(course._id, { $inc: { enrolledCount: 1 } });
 
   await Promise.allSettled([
-    sendPaymentApprovedEmail(user, course, payment),
-    sendOfferLetterEmail(user, internship, offerLetterUrl),
-    tempPassword ? sendWelcomeCredentialsEmail(user, tempPassword) : Promise.resolve(),
+    sendOfferLetterEmail(applicant, internship, offerLetterUrl, {
+      filename: `Internship-Offer-Letter-${internship.internshipId}.pdf`,
+      content: pdfBuffer,
+    }),
   ]);
 
-  return { user, internship, payment, application, tempPassword };
+  return { internship, payment, application, certificate };
 };
 
 export const createPaymentForApplication = async (application, { utrNumber, screenshotUrl }) => {

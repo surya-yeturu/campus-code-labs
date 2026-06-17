@@ -1,5 +1,4 @@
 import nodemailer from 'nodemailer';
-import { Resend } from 'resend';
 import {
   registrationTemplate,
   paymentSuccessTemplate,
@@ -16,7 +15,6 @@ const isPlaceholder = (value) =>
   !value || /your_|xxxxx|example\.com|changeme/i.test(String(value));
 
 const getEmailProvider = () => {
-  if (process.env.RESEND_API_KEY && !isPlaceholder(process.env.RESEND_API_KEY)) return 'resend';
   if (process.env.SMTP_USER && !isPlaceholder(process.env.SMTP_USER)) return 'smtp';
   return 'mock';
 };
@@ -33,7 +31,7 @@ const createTransporter = () =>
   });
 
 const getFromAddress = () =>
-  process.env.EMAIL_FROM || 'Campus Code Labs <onboarding@resend.dev>';
+  process.env.EMAIL_FROM || 'Campus Code Labs <no-reply@campuscodelabs.com>';
 
 const sendEmail = async ({ to, subject, html, attachments = [] }) => {
   const provider = getEmailProvider();
@@ -43,20 +41,12 @@ const sendEmail = async ({ to, subject, html, attachments = [] }) => {
     console.log('\n========== EMAIL (MOCK — not sent) ==========');
     console.log(`To: ${to}`);
     console.log(`Subject: ${subject}`);
-    console.log('Configure RESEND_API_KEY or SMTP_USER/SMTP_PASS in server/.env to send real emails.');
+    console.log('Configure SMTP_USER/SMTP_PASS in server/.env to send real emails.');
     console.log('=============================================\n');
     return { success: true, mock: true };
   }
 
   try {
-    if (provider === 'resend') {
-      const resend = new Resend(process.env.RESEND_API_KEY);
-      const { error } = await resend.emails.send({ from, to, subject, html });
-      if (error) throw new Error(error.message);
-      console.log(`[Email] Sent via Resend → ${to} | ${subject}`);
-      return { success: true };
-    }
-
     const transporter = createTransporter();
     await transporter.sendMail({ from, to, subject, html, attachments });
     console.log(`[Email] Sent via SMTP → ${to} | ${subject}`);
@@ -81,11 +71,14 @@ export const sendPaymentSuccessEmail = (user, payment, course) =>
     html: paymentSuccessTemplate(user, payment, course),
   });
 
-export const sendOfferLetterEmail = (user, internship, offerLetterUrl) =>
+export const sendOfferLetterEmail = (user, internship, offerLetterUrl, attachment) =>
   sendEmail({
     to: user.email,
     subject: 'Your Internship Offer Letter - Campus Code Labs',
     html: offerLetterTemplate(user, internship, offerLetterUrl),
+    attachments: attachment
+      ? [{ filename: attachment.filename, content: attachment.content, contentType: 'application/pdf' }]
+      : [],
   });
 
 export const sendCompletionEmail = (user, internship) =>
@@ -95,11 +88,14 @@ export const sendCompletionEmail = (user, internship) =>
     html: completionTemplate(user, internship),
   });
 
-export const sendCertificateEmail = (user, certificate, certificateUrl) =>
+export const sendCertificateEmail = (user, certificate, certificateUrl, attachment) =>
   sendEmail({
     to: user.email,
     subject: 'Your Internship Certificate - Campus Code Labs',
     html: certificateTemplate(user, certificate, certificateUrl),
+    attachments: attachment
+      ? [{ filename: attachment.filename, content: attachment.content, contentType: 'application/pdf' }]
+      : [],
   });
 
 export const sendApplicationReceivedEmail = (applicant, courseName) =>
@@ -109,11 +105,11 @@ export const sendApplicationReceivedEmail = (applicant, courseName) =>
     html: applicationReceivedTemplate({ ...applicant, applicationId: applicant.applicationId }, courseName),
   });
 
-export const sendPaymentApprovedEmail = (user, course, payment) =>
+export const sendPaymentApprovedEmail = (user, course, payment, certificate) =>
   sendEmail({
     to: user.email,
-    subject: 'Payment Approved - Campus Code Labs',
-    html: paymentApprovedTemplate(user, course, payment),
+    subject: 'Application Approved - Campus Code Labs',
+    html: paymentApprovedTemplate(user, course, payment, certificate),
   });
 
 export const sendWelcomeCredentialsEmail = (user, tempPassword) =>

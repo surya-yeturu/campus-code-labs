@@ -12,6 +12,11 @@ export const generateCertificateId = () => {
   return `${prefix}-${year}-${random}`;
 };
 
+export const generateCertificateNo = () => {
+  const sequence = Math.floor(Math.random() * 10000000);
+  return `INNOVATE/PPD/${String(sequence).padStart(7, '0')}`;
+};
+
 export const generateReceipt = () => `LV-${Date.now()}`;
 
 export const generateApplicationId = () => {

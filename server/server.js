@@ -25,10 +25,8 @@ dotenv.config();
 connectDB();
 
 const emailProvider = (() => {
-  const key = process.env.RESEND_API_KEY;
   const smtp = process.env.SMTP_USER;
   const isPlaceholder = (v) => !v || /your_|xxxxx|example\.com|changeme/i.test(String(v));
-  if (key && !isPlaceholder(key)) return 'resend';
   if (smtp && !isPlaceholder(smtp)) return 'smtp';
   return 'mock';
 })();

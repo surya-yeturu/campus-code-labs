@@ -86,7 +86,7 @@ export const verifyManualPayment = async (req, res) => {
 
   res.json({
     success: true,
-    message: 'Payment verified and student enrolled successfully',
+    message: 'Payment verified — certificate and offer letter emailed',
     data: result,
   });
 };

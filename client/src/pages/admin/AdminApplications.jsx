@@ -31,7 +31,7 @@ const AdminApplications = () => {
     setActionId(id);
     try {
       await api.post(`/applications/${id}/approve`);
-      toast.success('Application approved and student enrolled');
+      toast.success('Application approved — certificate and offer letter emailed');
       fetchData(applications.pagination?.page || 1);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Approval failed');
@@ -93,7 +93,10 @@ const AdminApplications = () => {
                   <td className="p-4">
                     <p className="font-medium">{app.fullName}</p>
                     <p className="text-xs text-slate-500">{app.email}</p>
-                    <p className="text-xs text-slate-400">{app.applicationId}</p>
+                    <p className="text-xs text-slate-500">{app.collegeName} · {app.year}</p>
+                    {app.certificateDate && (
+                      <p className="text-xs text-slate-400">Cert date: {new Date(app.certificateDate).toLocaleDateString()}</p>
+                    )}
                   </td>
                   <td className="p-4">{app.course?.title}</td>
                   <td className="p-4">

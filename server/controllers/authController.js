@@ -1,26 +1,10 @@
 import User from '../models/User.js';
 import generateToken from '../utils/generateToken.js';
-import { sendRegistrationEmail } from '../services/emailService.js';
 
 export const register = async (req, res) => {
-  const { fullName, email, phone, collegeName, password } = req.body;
-  const exists = await User.findOne({ email });
-  if (exists) {
-    return res.status(400).json({ success: false, message: 'Email already registered' });
-  }
-  const user = await User.create({ fullName, email, phone, collegeName, password });
-  sendRegistrationEmail(user).catch(console.error);
-  res.status(201).json({
-    success: true,
-    data: {
-      _id: user._id,
-      fullName: user.fullName,
-      email: user.email,
-      phone: user.phone,
-      collegeName: user.collegeName,
-      role: user.role,
-      token: generateToken(user._id),
-    },
+  return res.status(403).json({
+    success: false,
+    message: 'Student registration is disabled. Please apply via the internship form.',
   });
 };
 
@@ -32,6 +16,12 @@ export const login = async (req, res) => {
   }
   if (!user.isActive) {
     return res.status(401).json({ success: false, message: 'Account deactivated' });
+  }
+  if (user.role !== 'admin') {
+    return res.status(403).json({
+      success: false,
+      message: 'Student login is disabled. Your certificate and offer letter are sent to your email after approval.',
+    });
   }
   res.json({
     success: true,

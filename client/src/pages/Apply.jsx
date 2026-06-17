@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, Link, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Send } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -19,6 +19,10 @@ const Apply = () => {
     collegeName: '',
     branch: '',
     year: '',
+    internshipFromDate: '',
+    internshipToDate: '',
+    projectTitle: '',
+    certificateDate: '',
     internshipSlug: slug || '',
     duration: '',
     resume: null,
@@ -73,7 +77,7 @@ const Apply = () => {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10">
           <h1 className="section-title">Apply for Internship</h1>
           <p className="section-subtitle mx-auto mt-4">
-            No account required. Submit your application and we&apos;ll guide you through enrollment.
+            No account required. Submit your details, complete payment, and receive your certificate by email after approval.
           </p>
         </motion.div>
 
@@ -118,6 +122,52 @@ const Apply = () => {
               <option value="4th Year">4th Year</option>
               <option value="Graduate">Graduate</option>
             </select>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">Certificate Date</label>
+            <input
+              type="date"
+              required
+              className="input-field mt-1"
+              value={form.certificateDate}
+              onChange={(e) => setForm({ ...form, certificateDate: e.target.value })}
+            />
+            <p className="text-xs text-slate-500 mt-1">This date will appear on your internship certificate.</p>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">Internship From Date</label>
+            <input
+              type="date"
+              required
+              className="input-field mt-1"
+              value={form.internshipFromDate}
+              onChange={(e) => setForm({ ...form, internshipFromDate: e.target.value })}
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">Internship To Date</label>
+            <input
+              type="date"
+              required
+              className="input-field mt-1"
+              min={form.internshipFromDate || undefined}
+              value={form.internshipToDate}
+              onChange={(e) => setForm({ ...form, internshipToDate: e.target.value })}
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">Project Title (for certificate)</label>
+            <input
+              type="text"
+              className="input-field mt-1"
+              placeholder="e.g. FortiGuard: Implementing a Three-Level Password System Using Python"
+              value={form.projectTitle}
+              onChange={(e) => setForm({ ...form, projectTitle: e.target.value })}
+            />
           </div>
 
           <div>
@@ -171,10 +221,6 @@ const Apply = () => {
           <button type="submit" disabled={submitting} className="btn-primary w-full py-3">
             {submitting ? 'Submitting...' : <><Send className="w-4 h-4" /> Submit Application</>}
           </button>
-
-          <p className="text-center text-sm text-slate-500">
-            Already enrolled? <Link to="/login" className="text-brand-600 hover:underline">Student Login</Link>
-          </p>
         </motion.form>
       </div>
     </div>

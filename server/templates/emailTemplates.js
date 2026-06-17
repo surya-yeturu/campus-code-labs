@@ -16,67 +16,71 @@ const wrap = (content) => `
 <body>
   <div class="container">
     <div class="header">
-      <h1>Learnovate</h1>
-      <p>Innovation Through Learning</p>
+      <h1>Campus Code Labs</h1>
+      <p>THINK. CODE. DELIVER.</p>
     </div>
     <div class="content">${content}</div>
     <div class="footer">
-      <p>&copy; ${new Date().getFullYear()} Learnovate. All rights reserved.</p>
-      <p>Automated Internship Management Platform</p>
+      <p>&copy; ${new Date().getFullYear()} Campus Code Labs. All rights reserved.</p>
+      <p>Internship Management Platform</p>
     </div>
   </div>
 </body>
 </html>`;
 
+const applicantName = (user) => user.fullName || user.studentName || 'Student';
+
 export const registrationTemplate = (user) =>
   wrap(`
-    <h2>Welcome, ${user.fullName}!</h2>
-    <p>Your registration at Learnovate was successful. You're now ready to explore industry-ready internships and launch your career.</p>
-    <p><strong>What's next?</strong></p>
-    <ul>
-      <li>Browse our premium internship courses</li>
-      <li>Enroll and complete payment</li>
-      <li>Receive your offer letter automatically</li>
-      <li>Complete your internship and get certified</li>
-    </ul>
-    <a href="${process.env.CLIENT_URL}/courses" class="btn">Browse Internships</a>
+    <h2>Welcome, ${applicantName(user)}!</h2>
+    <p>Your registration at Campus Code Labs was successful.</p>
+    <a href="${process.env.CLIENT_URL}/apply" class="btn">Apply for Internship</a>
   `);
 
 export const paymentSuccessTemplate = (user, payment, course) =>
   wrap(`
     <h2>Payment Successful!</h2>
-    <p>Hi ${user.fullName}, your payment of <strong>₹${payment.amount}</strong> for <strong>${course.title}</strong> has been confirmed.</p>
+    <p>Hi ${applicantName(user)}, your payment of <strong>₹${payment.amount}</strong> for <strong>${course.title}</strong> has been confirmed.</p>
     <p>Receipt: ${payment.receipt}</p>
-    <p>Your internship offer letter is being generated and will be sent to you shortly.</p>
-    <a href="${process.env.CLIENT_URL}/dashboard" class="btn">Go to Dashboard</a>
+    <p>Your internship offer letter and certificate will be emailed after admin verification.</p>
   `);
 
 export const offerLetterTemplate = (user, internship, offerLetterUrl) =>
   wrap(`
-    <h2>Your Internship Offer Letter</h2>
-    <p>Congratulations ${user.fullName}!</p>
-    <p>Your offer letter for internship <strong>${internship.internshipId}</strong> is ready.</p>
-    <p>Duration: ${internship.duration} | Start: ${new Date(internship.startDate).toLocaleDateString()}</p>
-    <a href="${offerLetterUrl}" class="btn">Download Offer Letter</a>
-    <a href="${process.env.CLIENT_URL}/dashboard/internships" class="btn" style="margin-left:8px">View Dashboard</a>
+    <h2>Internship Offer Letter Issued</h2>
+    <p>Dear ${applicantName(user)},</p>
+    <p>Congratulations. Your internship application has been approved and your official offer letter has been issued.</p>
+    <p><strong>Internship ID:</strong> ${internship.internshipId}</p>
+    <p><strong>Duration:</strong> ${internship.duration}<br/>
+    <strong>Start Date:</strong> ${new Date(internship.startDate).toLocaleDateString('en-IN')}<br/>
+    <strong>End Date:</strong> ${new Date(internship.endDate).toLocaleDateString('en-IN')}</p>
+    <p>The signed offer letter PDF is attached to this email for immediate use.</p>
+    ${offerLetterUrl ? `<a href="${offerLetterUrl}" class="btn">Open Offer Letter</a>` : ''}
+    <p>Regards,<br/>Campus Code Labs Team</p>
   `);
 
 export const completionTemplate = (user, internship) =>
   wrap(`
     <h2>Internship Completion Confirmed</h2>
-    <p>Hi ${user.fullName}, your completion form for internship <strong>${internship.internshipId}</strong> has been received.</p>
-    <p>Your certificate is being generated and will be emailed to you automatically.</p>
-    <a href="${process.env.CLIENT_URL}/dashboard/certificates" class="btn">View Certificates</a>
+    <p>Hi ${applicantName(user)}, your internship <strong>${internship.internshipId}</strong> has been completed.</p>
+    <p>Your certificate has been emailed to you.</p>
+    <a href="${process.env.CLIENT_URL}/verify" class="btn">Verify Certificate</a>
   `);
 
 export const certificateTemplate = (user, certificate, certificateUrl) =>
   wrap(`
-    <h2>Your Internship Certificate</h2>
-    <p>Congratulations ${user.fullName}!</p>
-    <p>You have successfully completed <strong>${certificate.courseName}</strong>.</p>
-    <p>Certificate ID: <strong>${certificate.certificateId}</strong></p>
-    <p>Verify anytime at: ${process.env.CLIENT_URL}/verify/${certificate.certificateId}</p>
-    <a href="${certificateUrl}" class="btn">Download Certificate</a>
+    <h2>Internship Completion Certificate</h2>
+    <p>Dear ${applicantName(user)},</p>
+    <p>Congratulations on successfully completing your internship.</p>
+    <p><strong>Program:</strong> ${certificate.courseName}<br/>
+    <strong>Certificate No:</strong> ${certificate.certificateNo || certificate.certificateId}<br/>
+    <strong>Certificate ID:</strong> ${certificate.certificateId}<br/>
+    <strong>Issue Date:</strong> ${new Date(certificate.completionDate).toLocaleDateString('en-IN')}</p>
+    <p>Your official certificate PDF is attached to this email.</p>
+    <p>You can verify it anytime using the QR code on the certificate or by opening the verification page.</p>
+    <a href="${process.env.CLIENT_URL}/verify/${certificate.certificateId}" class="btn">Verify Certificate</a>
+    ${certificateUrl ? `<a href="${certificateUrl}" class="btn" style="margin-left:8px;">Open Certificate</a>` : ''}
+    <p>We wish you success in your future endeavors.<br/>Campus Code Labs Team</p>
   `);
 
 export const applicationReceivedTemplate = (applicant, courseName) =>
@@ -85,34 +89,32 @@ export const applicationReceivedTemplate = (applicant, courseName) =>
     <p>Hi ${applicant.fullName},</p>
     <p>We have received your application for the <strong>${courseName}</strong> internship program at Campus Code Labs.</p>
     <p>Please complete your payment to proceed with enrollment.</p>
-    <a href="${process.env.CLIENT_URL}/apply/payment/${applicant.applicationId || ''}" class="btn">Complete Payment</a>
+    <a href="${process.env.CLIENT_URL}/apply/payment/${applicant.applicationId || ''}?email=${encodeURIComponent(applicant.email || '')}" class="btn">Complete Payment</a>
   `);
 
-export const paymentApprovedTemplate = (user, course, payment) =>
+export const paymentApprovedTemplate = (user, course, payment, certificate) =>
   wrap(`
-    <h2>Payment Approved</h2>
-    <p>Hi ${user.fullName},</p>
-    <p>Your payment of <strong>₹${payment.amount}</strong> for <strong>${course.title}</strong> has been verified.</p>
-    <p>Your internship enrollment is now active. Login to your dashboard to access learning materials.</p>
-    <a href="${process.env.CLIENT_URL}/login" class="btn">Student Login</a>
+    <h2>Application Approved</h2>
+    <p>Hi ${applicantName(user)},</p>
+    <p>Your payment of <strong>₹${payment.amount}</strong> for <strong>${course.title}</strong> has been verified and your application is approved.</p>
+    <p>Your internship offer letter and certificate have been sent to this email address from Campus Code Labs.</p>
+    ${certificate ? `<p>Certificate ID: <strong>${certificate.certificateId}</strong></p>
+    <a href="${process.env.CLIENT_URL}/verify/${certificate.certificateId}" class="btn">Verify Certificate</a>` : ''}
   `);
 
 export const welcomeCredentialsTemplate = (user, tempPassword) =>
   wrap(`
     <h2>Welcome to Campus Code Labs</h2>
-    <p>Hi ${user.fullName},</p>
-    <p>Your student account has been created. Use the credentials below to login:</p>
+    <p>Hi ${applicantName(user)},</p>
+    <p>Your account credentials:</p>
     <p><strong>Email:</strong> ${user.email}</p>
     <p><strong>Temporary Password:</strong> ${tempPassword}</p>
-    <p>Please change your password after logging in.</p>
-    <a href="${process.env.CLIENT_URL}/login" class="btn">Login to Dashboard</a>
   `);
 
 export const recommendationTemplate = (user, fileUrl) =>
   wrap(`
     <h2>Your Recommendation Letter</h2>
-    <p>Hi ${user.fullName},</p>
+    <p>Hi ${applicantName(user)},</p>
     <p>Your recommendation letter from Campus Code Labs is ready.</p>
-    ${fileUrl ? `<a href="${fileUrl}" class="btn">Download Letter</a>` : '<p>Login to your dashboard to download.</p>'}
-    <a href="${process.env.CLIENT_URL}/dashboard/documents" class="btn">View Documents</a>
+    ${fileUrl ? `<a href="${fileUrl}" class="btn">Download Letter</a>` : ''}
   `);

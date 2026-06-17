@@ -17,8 +17,12 @@ const Login = () => {
     setLoading(true);
     try {
       const user = await login(form.email, form.password);
+      if (user.role !== 'admin') {
+        toast.error('Student login is disabled. Check your email for certificate and offer letter.');
+        return;
+      }
       toast.success('Welcome back!');
-      navigate(user.role === 'admin' ? '/admin' : '/dashboard');
+      navigate('/admin');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Login failed');
     } finally {
@@ -33,8 +37,8 @@ const Login = () => {
           <div className="mx-auto mb-4 w-fit">
             <LogoMark size={72} className="drop-shadow-[0_0_24px_rgba(10,132,255,0.35)]" />
           </div>
-          <h1 className="font-display text-2xl font-bold">Student Login</h1>
-          <p className="text-slate-600 mt-1">Sign in to your Campus Code Labs dashboard</p>
+          <h1 className="font-display text-2xl font-bold">Admin Login</h1>
+          <p className="text-slate-600 mt-1">Sign in to manage applications and certificates</p>
         </div>
         <form onSubmit={handleSubmit} className="glass-card p-8 space-y-4">
           <div>
@@ -55,7 +59,7 @@ const Login = () => {
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
           <p className="text-center text-sm text-slate-600">
-            New student? <Link to="/apply" className="text-brand-600 font-semibold">Apply Now</Link>
+            Applying for internship? <Link to="/apply" className="text-brand-600 font-semibold">Apply Now</Link>
           </p>
         </form>
       </motion.div>
