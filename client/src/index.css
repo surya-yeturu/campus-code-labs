@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply font-sans text-slate-900 bg-brand-50 antialiased;
+  }
+  .dark body {
+    @apply bg-brand-950 text-slate-100;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-white
+      bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-500 hover:to-brand-600
+      shadow-lg shadow-brand-600/25 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98];
+  }
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold
+      border-2 border-brand-600 text-brand-700 hover:bg-brand-600 hover:text-white
+      transition-all duration-300;
+  }
+  .glass-card {
+    @apply bg-white/70 dark:bg-white/10 backdrop-blur-xl border border-white/20
+      shadow-glass rounded-2xl;
+  }
+  .section-title {
+    @apply font-display text-3xl md:text-4xl font-bold text-brand-900 dark:text-white;
+  }
+  .section-subtitle {
+    @apply text-slate-600 dark:text-slate-400 text-lg max-w-2xl;
+  }
+  .input-field {
+    @apply w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700
+      bg-white dark:bg-brand-900/50 focus:ring-2 focus:ring-brand-500 focus:border-transparent
+      outline-none transition-all;
+  }
+  .sidebar-link {
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400
+      hover:bg-brand-50 dark:hover:bg-brand-800/50 hover:text-brand-700 dark:hover:text-white
+      transition-all duration-200;
+  }
+  .sidebar-link.active {
+    @apply bg-brand-600 text-white hover:bg-brand-600 hover:text-white shadow-lg shadow-brand-600/30;
+  }
+}
