@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Search, ShieldCheck, ShieldX, Award, Calendar, BookOpen, Mail, GraduationCap } from 'lucide-react';
 import api from '../services/api';
@@ -7,6 +7,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 
 const Verify = () => {
   const { certificateId: paramId } = useParams();
+  const location = useLocation();
   const [searchType, setSearchType] = useState('certificate');
   const [searchId, setSearchId] = useState(paramId || '');
   const [result, setResult] = useState(null);
@@ -23,6 +24,10 @@ const Verify = () => {
         : `/certificates/verify/${id.trim()}`;
       const { data } = await api.get(endpoint);
       setResult(data);
+      const shouldOpenCertificate = new URLSearchParams(location.search).get('open') === 'certificate';
+      if (shouldOpenCertificate && data.verified && data.data?.certificateUrl) {
+        window.location.href = data.data.certificateUrl;
+      }
     } catch {
       setResult({ success: false, verified: false, message: 'Record not found' });
     } finally {

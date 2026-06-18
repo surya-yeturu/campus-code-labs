@@ -6,6 +6,94 @@ import toast from 'react-hot-toast';
 import api from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 
+const fallbackProjects = [
+  'Student Portfolio Management Platform',
+  'Online Internship Application Tracker',
+  'Smart Certificate Verification System',
+  'Campus Event Registration Portal',
+];
+
+const projectTitlesByDomain = [
+  {
+    keywords: ['mern', 'full stack', 'web', 'react', 'node', 'javascript'],
+    projects: [
+      'MERN Stack Internship Management Portal',
+      'Real-Time Project Collaboration Dashboard',
+      'Online Certificate Verification Web App',
+      'College Placement and Training Portal',
+    ],
+  },
+  {
+    keywords: ['python', 'django', 'flask'],
+    projects: [
+      'Python-Based Student Performance Analyzer',
+      'Automated Resume Screening System',
+      'Django Internship Tracking Portal',
+      'Smart Attendance Management System',
+    ],
+  },
+  {
+    keywords: ['data', 'analytics', 'science', 'machine learning'],
+    projects: [
+      'Student Placement Prediction Using Machine Learning',
+      'Sales Insights Dashboard Using Python',
+      'Customer Churn Analysis Model',
+      'Academic Performance Analytics Dashboard',
+    ],
+  },
+  {
+    keywords: ['ai', 'artificial intelligence', 'deep learning', 'gen ai'],
+    projects: [
+      'AI Chatbot for Student Support',
+      'Resume Parser Using Natural Language Processing',
+      'AI-Based Interview Question Generator',
+      'Image Classification Web Application',
+    ],
+  },
+  {
+    keywords: ['cyber', 'security', 'ethical hacking'],
+    projects: [
+      'Three-Level Password Authentication System',
+      'Phishing Website Detection Tool',
+      'Secure File Encryption Application',
+      'Network Vulnerability Scanner Dashboard',
+    ],
+  },
+  {
+    keywords: ['ui', 'ux', 'design', 'figma'],
+    projects: [
+      'Mobile Banking App UI/UX Case Study',
+      'E-Learning Platform Design System',
+      'Internship Portal User Experience Redesign',
+      'Food Delivery App Prototype',
+    ],
+  },
+  {
+    keywords: ['mobile', 'android', 'flutter', 'react native'],
+    projects: [
+      'Flutter Student Companion App',
+      'Android Task and Attendance Tracker',
+      'Mobile Internship Progress Tracker',
+      'React Native Campus Connect App',
+    ],
+  },
+  {
+    keywords: ['cloud', 'devops', 'aws', 'docker'],
+    projects: [
+      'Dockerized MERN Application Deployment',
+      'CI/CD Pipeline for Web Applications',
+      'Cloud-Based File Backup System',
+      'AWS Hosted Student Portal',
+    ],
+  },
+];
+
+const getProjectOptions = (internship) => {
+  if (!internship) return [];
+  const text = [internship.title, internship.description, ...(internship.skills || [])].join(' ').toLowerCase();
+  return projectTitlesByDomain.find((domain) => domain.keywords.some((keyword) => text.includes(keyword)))?.projects || fallbackProjects;
+};
+
 const Apply = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -19,12 +107,11 @@ const Apply = () => {
     collegeName: '',
     branch: '',
     year: '',
+    duration: '',
     internshipFromDate: '',
     internshipToDate: '',
-    projectTitle: '',
-    certificateDate: '',
     internshipSlug: slug || '',
-    duration: '',
+    projectTitle: '',
     resume: null,
   });
 
@@ -34,12 +121,13 @@ const Apply = () => {
       setInternships(list);
       if (slug) {
         const selected = list.find((c) => c.slug === slug);
-        if (selected) setForm((f) => ({ ...f, duration: selected.duration, internshipSlug: slug }));
+        if (selected) setForm((f) => ({ ...f, duration: selected.duration, internshipSlug: slug, projectTitle: '' }));
       }
     }).finally(() => setLoading(false));
   }, [slug]);
 
   const selectedInternship = internships.find((c) => c.slug === form.internshipSlug);
+  const projectOptions = getProjectOptions(selectedInternship);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -125,49 +213,42 @@ const Apply = () => {
           </div>
 
           <div>
-            <label className="text-sm font-medium">Certificate Date</label>
-            <input
-              type="date"
+            <label className="text-sm font-medium">Duration</label>
+            <select
               required
               className="input-field mt-1"
-              value={form.certificateDate}
-              onChange={(e) => setForm({ ...form, certificateDate: e.target.value })}
-            />
-            <p className="text-xs text-slate-500 mt-1">This date will appear on your internship certificate.</p>
+              value={form.duration}
+              onChange={(e) => setForm({ ...form, duration: e.target.value })}
+            >
+              <option value="">Select duration</option>
+              {['4 Weeks', '6 Weeks', '8 Weeks', '10 Weeks', '12 Weeks'].map((d) => (
+                <option key={d} value={d}>{d}</option>
+              ))}
+            </select>
           </div>
 
-          <div>
-            <label className="text-sm font-medium">Internship From Date</label>
-            <input
-              type="date"
-              required
-              className="input-field mt-1"
-              value={form.internshipFromDate}
-              onChange={(e) => setForm({ ...form, internshipFromDate: e.target.value })}
-            />
-          </div>
-
-          <div>
-            <label className="text-sm font-medium">Internship To Date</label>
-            <input
-              type="date"
-              required
-              className="input-field mt-1"
-              min={form.internshipFromDate || undefined}
-              value={form.internshipToDate}
-              onChange={(e) => setForm({ ...form, internshipToDate: e.target.value })}
-            />
-          </div>
-
-          <div>
-            <label className="text-sm font-medium">Project Title (for certificate)</label>
-            <input
-              type="text"
-              className="input-field mt-1"
-              placeholder="e.g. FortiGuard: Implementing a Three-Level Password System Using Python"
-              value={form.projectTitle}
-              onChange={(e) => setForm({ ...form, projectTitle: e.target.value })}
-            />
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium">Internship From Date</label>
+              <input
+                type="date"
+                required
+                className="input-field mt-1"
+                value={form.internshipFromDate}
+                onChange={(e) => setForm({ ...form, internshipFromDate: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Internship To Date</label>
+              <input
+                type="date"
+                required
+                className="input-field mt-1"
+                min={form.internshipFromDate || undefined}
+                value={form.internshipToDate}
+                onChange={(e) => setForm({ ...form, internshipToDate: e.target.value })}
+              />
+            </div>
           </div>
 
           <div>
@@ -178,7 +259,12 @@ const Apply = () => {
               value={form.internshipSlug}
               onChange={(e) => {
                 const selected = internships.find((c) => c.slug === e.target.value);
-                setForm({ ...form, internshipSlug: e.target.value, duration: selected?.duration || '' });
+                setForm({
+                  ...form,
+                  internshipSlug: e.target.value,
+                  duration: selected?.duration || '',
+                  projectTitle: '',
+                });
               }}
             >
               <option value="">Select internship</option>
@@ -189,15 +275,17 @@ const Apply = () => {
           </div>
 
           <div>
-            <label className="text-sm font-medium">Duration</label>
+            <label className="text-sm font-medium">Project Selection</label>
             <select
               required
               className="input-field mt-1"
-              value={form.duration}
-              onChange={(e) => setForm({ ...form, duration: e.target.value })}
+              value={form.projectTitle}
+              onChange={(e) => setForm({ ...form, projectTitle: e.target.value })}
+              disabled={!selectedInternship}
             >
-              {['4 Weeks', '6 Weeks', '8 Weeks', '10 Weeks', '12 Weeks'].map((d) => (
-                <option key={d} value={d}>{d}</option>
+              <option value="">{selectedInternship ? 'Select project title' : 'Select internship first'}</option>
+              {projectOptions.map((title) => (
+                <option key={title} value={title}>{title}</option>
               ))}
             </select>
           </div>
@@ -211,12 +299,6 @@ const Apply = () => {
               onChange={(e) => setForm({ ...form, resume: e.target.files[0] })}
             />
           </div>
-
-          {selectedInternship && (
-            <p className="text-sm text-slate-500">
-              Program fee: <strong>₹{selectedInternship.price?.toLocaleString()}</strong>
-            </p>
-          )}
 
           <button type="submit" disabled={submitting} className="btn-primary w-full py-3">
             {submitting ? 'Submitting...' : <><Send className="w-4 h-4" /> Submit Application</>}

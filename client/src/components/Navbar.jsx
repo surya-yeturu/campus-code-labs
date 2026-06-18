@@ -67,7 +67,6 @@ const Navbar = () => {
               </>
             ) : (
               <>
-                <Link to="/login" className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-brand-600 hidden sm:block px-3">Admin Login</Link>
                 <Link to="/apply" className="btn-primary text-sm py-2">Apply Now</Link>
               </>
             )}

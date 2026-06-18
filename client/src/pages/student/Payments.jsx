@@ -3,8 +3,8 @@ import { IndianRupee, CheckCircle, XCircle, Clock } from 'lucide-react';
 import api from '../../services/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
-const statusIcon = { paid: CheckCircle, failed: XCircle, created: Clock };
-const statusColor = { paid: 'text-green-600', failed: 'text-red-600', created: 'text-amber-600' };
+const statusIcon = { verified: CheckCircle, rejected: XCircle, submitted: Clock, pending: Clock };
+const statusColor = { verified: 'text-green-600', rejected: 'text-red-600', submitted: 'text-amber-600', pending: 'text-amber-600' };
 
 const Payments = () => {
   const [payments, setPayments] = useState([]);

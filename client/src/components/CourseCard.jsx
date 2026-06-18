@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Clock, IndianRupee, Wifi, ArrowRight } from 'lucide-react';
+import { Clock, Wifi, ArrowRight } from 'lucide-react';
 const CourseCard = ({ course, index = 0 }) => {
   const detailPath = `/internships/${course.slug}`;
   const applyPath = `/apply/${course.slug}`;
@@ -34,10 +34,7 @@ const CourseCard = ({ course, index = 0 }) => {
         <span className="flex items-center gap-1"><Clock className="w-4 h-4" />{course.duration}</span>
         <span className="flex items-center gap-1"><Wifi className="w-4 h-4" />{course.mode}</span>
       </div>
-      <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-700">
-        <span className="flex items-center text-2xl font-bold text-brand-700 dark:text-brand-400">
-          <IndianRupee className="w-5 h-5" />{course.price?.toLocaleString()}
-        </span>
+      <div className="flex items-center justify-end pt-4 border-t border-slate-100 dark:border-slate-700">
         <Link to={applyPath} className="btn-primary text-sm py-2 px-4">
           Apply Now <ArrowRight className="w-4 h-4" />
         </Link>
