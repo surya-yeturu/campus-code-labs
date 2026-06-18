@@ -10,12 +10,9 @@ const paymentSchema = new mongoose.Schema(
     currency: { type: String, default: 'INR' },
     utrNumber: { type: String, default: '' },
     screenshotUrl: { type: String, default: '' },
-    razorpayOrderId: { type: String, default: '' },
-    razorpayPaymentId: { type: String, default: '' },
-    razorpaySignature: { type: String, default: '' },
     status: {
       type: String,
-      enum: ['pending', 'submitted', 'verified', 'rejected', 'created', 'paid', 'failed', 'refunded'],
+      enum: ['pending', 'submitted', 'verified', 'rejected'],
       default: 'pending',
     },
     receipt: { type: String, default: '' },

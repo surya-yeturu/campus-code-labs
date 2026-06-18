@@ -9,16 +9,21 @@ const brandBlue = '#0f2744';
 const gold = '#c9a227';
 const brightBlue = '#1DA1FF';
 const deepBlue = '#005BFF';
+const slate = '#475569';
 
-const drawCompanyLogo = (doc, x, y) => {
+const drawCompanyLogo = (doc, x, y, scale = 1) => {
   // Vector logo approximation (CCL mark) so PDF does not depend on external image files.
   doc.save();
-  doc.lineWidth(10).strokeColor(brightBlue).lineCap('round');
-  doc.arc(x + 16, y + 16, 16, 40, 320).stroke();
-  doc.strokeColor(deepBlue).lineWidth(8);
-  doc.arc(x + 24, y + 16, 10, 40, 320).stroke();
-  doc.strokeColor('#E5E7EB').lineWidth(7);
-  doc.moveTo(x + 33, y + 7).lineTo(x + 33, y + 26).lineTo(x + 45, y + 26).stroke();
+  doc.lineWidth(10 * scale).strokeColor(brightBlue).lineCap('round');
+  doc.arc(x + 16 * scale, y + 16 * scale, 16 * scale, 40, 320).stroke();
+  doc.strokeColor(deepBlue).lineWidth(8 * scale);
+  doc.arc(x + 24 * scale, y + 16 * scale, 10 * scale, 40, 320).stroke();
+  doc.strokeColor('#E5E7EB').lineWidth(7 * scale);
+  doc
+    .moveTo(x + 33 * scale, y + 7 * scale)
+    .lineTo(x + 33 * scale, y + 26 * scale)
+    .lineTo(x + 45 * scale, y + 26 * scale)
+    .stroke();
   doc.restore();
 };
 
@@ -33,8 +38,8 @@ const drawPartnerLogos = (doc, y, { centered = true, height = 26 } = {}) => {
     { label: 'Made in India', filename: 'made-in-india.png' },
   ];
 
-  const gap = 28;
-  const widths = [52, 64, 78]; // tuned per logo aspect ratio
+  const gap = Math.max(28, height * 1.05);
+  const widths = [height * 2.0, height * 2.45, height * 3.0]; // tuned per logo aspect ratio
   const totalWidth = widths.reduce((a, b) => a + b, 0) + gap * (widths.length - 1);
   const startX = centered ? (doc.page.width - totalWidth) / 2 : 60;
 
@@ -48,8 +53,8 @@ const drawPartnerLogos = (doc, y, { centered = true, height = 26 } = {}) => {
     } else {
       doc.fillColor('#475569')
         .font('Helvetica-Bold')
-        .fontSize(9)
-        .text(item.label, x, y + 6, { width: widths[index], align: 'center' });
+        .fontSize(Math.max(9, height * 0.34))
+        .text(item.label, x, y + height * 0.24, { width: widths[index], align: 'center' });
     }
   });
 };
@@ -163,7 +168,6 @@ export const generateCertificatePDF = async (data) => {
     verifyUrl,
   } = data;
 
-    const dateIssued = issueDate || completionDate;
   const qrBuffer = await QRCode.toBuffer(verifyUrl, { width: 120, margin: 1 });
   const fromDate = internshipFromDate ? new Date(internshipFromDate) : null;
   const toDate = internshipToDate ? new Date(internshipToDate) : null;
@@ -176,63 +180,77 @@ export const generateCertificatePDF = async (data) => {
     doc.on('end', () => resolve(Buffer.concat(chunks)));
     doc.on('error', reject);
 
-    doc.fillColor(brandBlue).fontSize(32).font('Helvetica-Bold')
-      .text('CAMPUS CODE LABS', 0, 60, { align: 'center' });
-    doc.fontSize(12).font('Helvetica').fillColor('#666666')
-      .text('THINK. CODE. DELIVER.', { align: 'center' });
+    const pageWidth = doc.page.width;
+    const pageHeight = doc.page.height;
 
-    doc.moveDown(2).fillColor(gold).fontSize(20).font('Helvetica-Bold')
-      .text('INTERNSHIP COMPLETION CERTIFICATE', { align: 'center' });
+    doc.rect(18, 18, pageWidth - 36, pageHeight - 36).lineWidth(2).strokeColor(gold).stroke();
+    doc.rect(28, 28, pageWidth - 56, pageHeight - 56).lineWidth(0.8).strokeColor('#dbeafe').stroke();
 
-    doc.moveDown(0.9).fillColor('#333333').fontSize(12).font('Helvetica')
-      .text('This is to certify that', { align: 'center' });
+    drawCompanyLogo(doc, 56, 44, 1.35);
+    doc.fillColor(brandBlue).fontSize(34).font('Helvetica-Bold')
+      .text('CAMPUS CODE LABS', 118, 48, { width: 610, align: 'left' });
+    doc.fontSize(12).font('Helvetica').fillColor(slate)
+      .text('THINK. CODE. DELIVER.', 120, 86, { width: 260, align: 'left' });
+    doc.fontSize(9).fillColor(slate)
+      .text(`Certificate ID: ${certificateId}`, 560, 54, { width: 210, align: 'right' })
+      .text(`Certificate No: ${certificateNo}`, 560, 69, { width: 210, align: 'right' });
 
-    doc.moveDown(0.5).fillColor(brandBlue).fontSize(30).font('Helvetica-Bold')
-      .text(studentName.toUpperCase(), { align: 'center' });
+    doc.moveTo(70, 118).lineTo(pageWidth - 70, 118).lineWidth(1).strokeColor('#dbeafe').stroke();
 
+    doc.fillColor(gold).fontSize(21).font('Helvetica-Bold')
+      .text('INTERNSHIP COMPLETION CERTIFICATE', 70, 138, { width: pageWidth - 140, align: 'center' });
+
+    doc.fillColor('#333333').fontSize(12).font('Helvetica')
+      .text('This is to certify that', 70, 182, { width: pageWidth - 140, align: 'center' });
+
+    doc.fillColor(brandBlue).fontSize(31).font('Helvetica-Bold')
+      .text(studentName.toUpperCase(), 90, 205, { width: pageWidth - 180, align: 'center' });
+
+    let profileY = 246;
     if (branch) {
-      doc.moveDown(0.3).fillColor('#374151').fontSize(14).font('Helvetica-Bold')
-        .text(branch.toUpperCase(), { align: 'center' });
+      doc.fillColor('#374151').fontSize(13).font('Helvetica-Bold')
+        .text(branch.toUpperCase(), 90, profileY, { width: pageWidth - 180, align: 'center' });
+      profileY += 19;
     }
     if (collegeName) {
-      doc.moveDown(0.2).fillColor('#374151').fontSize(14).font('Helvetica-Bold')
-        .text(collegeName.toUpperCase(), { align: 'center' });
+      doc.fillColor('#374151').fontSize(13).font('Helvetica-Bold')
+        .text(collegeName.toUpperCase(), 90, profileY, { width: pageWidth - 180, align: 'center' });
     }
-
-    doc.moveDown(0.8).fillColor('#333333').fontSize(11).font('Helvetica')
+    doc.fillColor('#333333').fontSize(11.5).font('Helvetica')
       .text(
         `has effectively completed a ${duration.toLowerCase()} internship in ${courseName}, spanning from ${fromDate ? formatShortDate(fromDate) : 'N/A'} to ${toDate ? formatShortDate(toDate) : 'N/A'}.`,
         90,
-        doc.y,
+        292,
         { align: 'center', width: 620, lineGap: 3 }
       );
 
     const projectLine = projectTitle
       ? `Additionally, the intern has satisfactorily completed and submitted a project titled '${projectTitle}'.`
       : 'Additionally, the intern has satisfactorily completed and submitted the internship project work.';
-    doc.moveDown(0.6).text(
+    doc.text(
       `${projectLine} We extend our best wishes for the future endeavors.`,
       90,
-      doc.y,
+      334,
       { align: 'center', width: 620, lineGap: 3 }
     );
 
-    doc.moveDown(1).fontSize(11).fillColor(brandBlue).font('Helvetica-Bold')
-      .text(`Certificate No: ${certificateNo}`, { align: 'center' });
-    doc.moveDown(0.3).fontSize(9).fillColor('#666666').font('Helvetica')
-      .text(`Certificate ID: ${certificateId}`, { align: 'center' });
-    if (internshipId) doc.text(`Internship ID: ${internshipId}`, { align: 'center' });
+    if (internshipId) {
+      doc.fontSize(9).fillColor('#64748b').font('Helvetica')
+        .text(`Internship ID: ${internshipId}`, 90, 382, { width: 620, align: 'center' });
+    }
 
-    doc.image(qrBuffer, 620, 380, { width: 100, height: 100 });
-    doc.fontSize(8).fillColor('#666666').text('Scan to Verify', 635, 485);
+    doc.roundedRect(628, 372, 122, 142, 8).lineWidth(0.8).strokeColor('#dbeafe').stroke();
+    doc.image(qrBuffer, 639, 384, { width: 100, height: 100 });
+    doc.fontSize(8).fillColor('#64748b').text('Scan to open certificate', 638, 492, { width: 102, align: 'center' });
 
     doc.fontSize(10).fillColor(brandBlue)
-      .text('Authorized Signatory', 80, 420)
-      .text('Campus Code Labs', 80, 435)
-      .text('_________________________', 80, 400);
+      .text('_________________________', 86, 424)
+      .text('Authorized Signatory', 104, 446)
+      .fontSize(9).fillColor('#64748b')
+      .text('Campus Code Labs', 116, 462);
 
     // Partner logos at bottom-most (no boxes / borders)
-    drawPartnerLogos(doc, 540, { height: 26 });
+    drawPartnerLogos(doc, 525, { height: 36 });
 
     doc.end();
   });

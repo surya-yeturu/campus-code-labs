@@ -1,18 +1,18 @@
-# Learnovate
+# Campus Code Labs (Learnovate)
 
 **Innovation Through Learning**
 
-A fully automated MERN stack Internship Management & Certification Platform.
+A MERN stack internship management and certification platform for students.
 
 ## Features
 
-- Student registration & JWT authentication
-- 8 internship courses with enrollment flow
-- Razorpay payment integration with webhooks
+- Public internship application (no login required)
+- Manual UPI/bank payment with admin verification
 - Automatic offer letter PDF generation & email
-- Internship completion form with auto certificate generation
-- QR code certificate verification
-- Admin dashboard with analytics
+- Certificate PDF generation with embedded QR code
+- Google Drive storage for certificates (optional)
+- Public certificate verification via QR scan or ID lookup
+- Admin dashboard for applications, payments, and certificates
 - Premium EdTech UI with dark mode
 
 ## Tech Stack
@@ -22,16 +22,16 @@ A fully automated MERN stack Internship Management & Certification Platform.
 | Frontend | React, Vite, Tailwind CSS, Framer Motion |
 | Backend | Node.js, Express.js |
 | Database | MongoDB Atlas |
-| Auth | JWT, bcrypt |
-| Payments | Razorpay |
+| Auth | JWT, bcrypt (admin only) |
+| Payments | Manual UTR + screenshot verification |
 | Email | Nodemailer |
 | PDF | PDFKit |
-| Storage | Cloudinary |
+| Storage | Google Drive (certificates) / Supabase / local uploads |
 
 ## Project Structure
 
 ```
-startup/
+campus-code-labs/
 ├── client/          # React frontend
 ├── server/          # Express API
 └── README.md
@@ -43,8 +43,7 @@ startup/
 
 - Node.js 18+
 - MongoDB Atlas account (or local MongoDB)
-- Razorpay test keys
-- Cloudinary account (optional for PDF storage)
+- Google Cloud service account (optional — for certificate storage on Drive)
 - SMTP credentials (optional — emails log to console without SMTP)
 
 ### 1. Backend
@@ -62,7 +61,6 @@ npm run dev
 
 ```bash
 cd client
-cp .env.example .env
 npm install
 npm run dev
 ```
@@ -75,24 +73,6 @@ npm run dev
 - Email: `admin@learnovate.com`
 - Password: `Admin@123456`
 
-### Email setup (required for approval emails)
-
-Emails are **not sent** until SMTP is configured in `server/.env`.
-
-**Gmail SMTP**
-
-1. Enable 2FA on your Google account
-2. Create an [App Password](https://myaccount.google.com/apppasswords)
-3. Set in `server/.env`:
-   ```
-   SMTP_USER=your@gmail.com
-   SMTP_PASS=your_16_char_app_password
-   EMAIL_FROM=Campus Code Labs <your@gmail.com>
-   ```
-4. Restart the server
-
-Without either option, emails are logged to the **server console** only (mock mode).
-
 ## Environment Variables
 
 ### Server (`server/.env`)
@@ -101,28 +81,20 @@ Without either option, emails are logged to the **server console** only (mock mo
 |----------|-------------|
 | MONGODB_URI | MongoDB connection string |
 | JWT_SECRET | Secret for JWT signing |
-| RAZORPAY_KEY_ID | Razorpay key |
-| RAZORPAY_KEY_SECRET | Razorpay secret |
-| CLOUDINARY_* | Cloudinary credentials |
+| GOOGLE_DRIVE_* | Google Drive service account (certificates) |
 | SMTP_* | Email configuration |
 | EMAIL_FROM | Sender address for emails |
 | CLIENT_URL | Frontend URL for QR codes & emails |
-
-### Client (`client/.env`)
-
-| Variable | Description |
-|----------|-------------|
-| VITE_API_URL | Backend API URL |
-| VITE_RAZORPAY_KEY_ID | Razorpay public key |
+| SERVER_URL | Backend URL for absolute file links |
 
 ## User Flow
 
-1. **Register** → Welcome email
-2. **Browse courses** → Apply for internship
-3. **Pay via Razorpay** → Offer letter auto-generated & emailed
-4. **Complete internship** → Submit completion form
-5. **Certificate** → Auto-generated with QR, emailed
-6. **Verify** → Anyone can verify at `/verify/:certificateId`
+1. **Browse internships** → Student selects a program at `/internships`
+2. **Apply** → Fills form at `/apply/:slug` (name, college, dates, project, resume)
+3. **Pay manually** → UPI/bank transfer at `/apply/payment/:applicationId` with UTR + screenshot
+4. **Admin verifies** → Admin approves payment in dashboard
+5. **Auto-issued** → Offer letter + certificate PDF generated, emailed, stored on Drive
+6. **Verify** → QR on certificate links to `/verify/:certificateId?open=certificate`
 
 ## Deployment
 
@@ -142,38 +114,6 @@ Without either option, emails are logged to the **server console** only (mock mo
 3. Start: `npm start`
 4. Add all env variables from `.env.example`
 5. Set `CLIENT_URL` to your Vercel URL
-
-### MongoDB Atlas
-
-1. Create free cluster
-2. Add database user & whitelist IP (0.0.0.0/0 for cloud)
-3. Copy connection string to `MONGODB_URI`
-4. Run seed on production: `npm run seed`
-
-### Razorpay Webhook
-
-Set webhook URL: `https://your-api.onrender.com/api/payments/webhook`
-
-## API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | /api/auth/register | Register student |
-| POST | /api/auth/login | Login |
-| GET | /api/courses | List courses |
-| POST | /api/internships | Create application |
-| POST | /api/payments/create-order | Create Razorpay order |
-| POST | /api/payments/verify | Verify payment |
-| POST | /api/certificates/complete | Submit completion |
-| GET | /api/certificates/verify/:id | Verify certificate |
-| GET | /api/admin/stats | Admin analytics |
-
-## Testing Tips
-
-- Use Razorpay test mode cards for payments
-- Set internship end date in the past to test completion flow
-- Without Cloudinary, PDFs still generate but may use fallback URLs
-- Without SMTP, check server console for email mock logs
 
 ## License
 

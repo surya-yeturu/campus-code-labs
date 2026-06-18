@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { getSupabase, isSupabaseConfigured } from '../config/supabase.js';
+import { isGoogleDriveConfigured, uploadToGoogleDrive } from './googleDriveService.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const localRoot = path.join(__dirname, '../uploads');
@@ -29,6 +30,10 @@ const uploadLocal = (buffer, folder, filename) => {
 };
 
 export const uploadBuffer = async (buffer, folder, filename, contentType = 'application/octet-stream') => {
+  if (folder === 'certificates' && isGoogleDriveConfigured()) {
+    return uploadToGoogleDrive(buffer, folder, filename, contentType);
+  }
+
   if (isSupabaseConfigured()) {
     const supabase = getSupabase();
     const bucket = bucketMap[folder] || folder;
