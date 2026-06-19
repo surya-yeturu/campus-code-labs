@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { IndianRupee, Upload, CheckCircle } from 'lucide-react';
+import { Upload, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
+
+const apiBase = import.meta.env.VITE_API_URL || '/api';
 
 const ApplyPayment = () => {
   const { applicationId } = useParams();
@@ -113,9 +115,6 @@ const ApplyPayment = () => {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
           <h1 className="section-title">Complete Payment</h1>
           <p className="text-slate-600 mt-2">{application?.course?.title}</p>
-          <p className="text-2xl font-bold text-brand-700 mt-2 flex items-center justify-center gap-1">
-            <IndianRupee className="w-6 h-6" />{application?.course?.price?.toLocaleString()}
-          </p>
         </motion.div>
 
         {isApproved ? (
@@ -138,9 +137,9 @@ const ApplyPayment = () => {
           <>
             <div className="glass-card p-8 mb-6 text-center">
               <h3 className="font-semibold mb-4">Pay via UPI</h3>
-              {settings?.qrCodeUrl && (
+              {settings?.hasQrCode && (
                 <img
-                  src={settings.qrCodeUrl}
+                  src={`${apiBase}/payment-settings/qr?t=${settings.updatedAt || Date.now()}`}
                   alt="UPI QR Code"
                   className="w-48 h-48 mx-auto mb-4 rounded-xl border border-slate-200"
                 />
@@ -150,7 +149,7 @@ const ApplyPayment = () => {
                   {settings.upiId}
                 </p>
               )}
-              {!settings?.upiId && !settings?.qrCodeUrl && (
+              {!settings?.upiId && !settings?.hasQrCode && (
                 <p className="text-slate-500">Payment details will be shared via email.</p>
               )}
             </div>

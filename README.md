@@ -50,7 +50,6 @@ campus-code-labs/
 
 ```bash
 cd server
-cp .env.example .env
 # Edit .env with your credentials
 npm install
 npm run seed    # Seeds courses + admin user
@@ -112,7 +111,7 @@ npm run dev
 1. Create Web Service from `server/`
 2. Build: `npm install`
 3. Start: `npm start`
-4. Add all env variables from `.env.example`
+4. Add all env variables to `server/.env`
 5. Set `CLIENT_URL` to your Vercel URL
 
 ## License

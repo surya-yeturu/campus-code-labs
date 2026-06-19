@@ -17,6 +17,14 @@ const AdminPayments = () => {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [actionId, setActionId] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+
+  const resolveScreenshotUrl = (url) => {
+    if (!url) return '';
+    if (/^https?:\/\//i.test(url)) return url;
+    const base = import.meta.env.VITE_API_URL?.replace(/\/api$/, '') || 'http://localhost:5000';
+    return `${base}${url.startsWith('/') ? url : `/${url}`}`;
+  };
 
   const fetchData = () => {
     setLoading(true);
@@ -82,9 +90,13 @@ const AdminPayments = () => {
                 <td className="p-4">
                   <p className="text-xs">{p.utrNumber || '—'}</p>
                   {p.screenshotUrl && (
-                    <a href={p.screenshotUrl} target="_blank" rel="noreferrer" className="text-brand-600 text-xs flex items-center gap-1 mt-1">
-                      <Eye className="w-3 h-3" /> Screenshot
-                    </a>
+                    <button
+                      type="button"
+                      onClick={() => setPreviewUrl(resolveScreenshotUrl(p.screenshotUrl))}
+                      className="text-brand-600 text-xs flex items-center gap-1 mt-1 hover:underline"
+                    >
+                      <Eye className="w-3 h-3" /> View Screenshot
+                    </button>
                   )}
                 </td>
                 <td className="p-4">
@@ -119,6 +131,25 @@ const AdminPayments = () => {
           </tbody>
         </table>
       </div>
+
+      {previewUrl && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+          onClick={() => setPreviewUrl(null)}
+        >
+          <div className="bg-white dark:bg-brand-900 rounded-xl p-4 max-w-3xl max-h-[90vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
+            <img src={previewUrl} alt="Payment screenshot" className="max-w-full rounded-lg" />
+            <div className="flex gap-3 mt-4">
+              <a href={previewUrl} target="_blank" rel="noreferrer" className="btn-primary text-sm">
+                Open in new tab
+              </a>
+              <button type="button" onClick={() => setPreviewUrl(null)} className="px-4 py-2 rounded-lg bg-slate-200 text-slate-700 text-sm">
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
