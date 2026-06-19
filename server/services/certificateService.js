@@ -89,11 +89,11 @@ export const issueCertificateForInternship = async (internship, applicant, { sen
 
   try {
     const certUpload = await uploadBuffer(pdfBuffer, 'certificates', `${certificateId}.pdf`, 'application/pdf');
-    certificateUrl = toAbsoluteUrl(certUpload.url || certUpload.secure_url);
+    certificateUrl = certUpload.viewUrl || certUpload.url || certUpload.secure_url;
 
     const qrBuffer = await QRCode.toBuffer(certificateOpenUrl, { width: 300 });
     const qrUpload = await uploadBuffer(qrBuffer, 'certificates', `${certificateId}-qr.png`, 'image/png');
-    qrCodeUrl = toAbsoluteUrl(qrUpload.url || qrUpload.secure_url);
+    qrCodeUrl = toAbsoluteUrl(qrUpload.url || qrUpload.viewUrl || qrUpload.secure_url);
   } catch (err) {
     console.error('Certificate upload error:', err.message);
     certificateUrl = verifyUrl;

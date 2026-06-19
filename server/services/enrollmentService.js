@@ -124,8 +124,16 @@ export const createPaymentForApplication = async (application, { utrNumber, scre
   const course = await Course.findById(application.course);
   if (!course) throw new Error('Course not found');
 
+  const normalizedUtr = String(utrNumber || '').trim();
   const existingPaymentId = application.payment?._id || application.payment;
   let payment = existingPaymentId ? await Payment.findById(existingPaymentId) : null;
+
+  const duplicateUtr = await Payment.findOne({ utrNumber: normalizedUtr });
+  if (duplicateUtr && duplicateUtr._id.toString() !== payment?._id?.toString()) {
+    const err = new Error('UTR number already exists');
+    err.statusCode = 400;
+    throw err;
+  }
 
   if (payment && payment.status === 'verified') {
     throw new Error('Payment already verified');
@@ -136,14 +144,14 @@ export const createPaymentForApplication = async (application, { utrNumber, scre
       application: application._id,
       course: course._id,
       amount: course.price,
-      utrNumber,
+      utrNumber: normalizedUtr,
       screenshotUrl,
       status: 'submitted',
       receipt: generateReceipt(),
     });
     application.payment = payment._id;
   } else {
-    payment.utrNumber = utrNumber;
+    payment.utrNumber = normalizedUtr;
     payment.screenshotUrl = screenshotUrl;
     payment.status = 'submitted';
     await payment.save();

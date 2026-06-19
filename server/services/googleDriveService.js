@@ -6,12 +6,27 @@ const drivePermissionUrl = (fileId) => `https://www.googleapis.com/drive/v3/file
 
 const normalizePrivateKey = (key = '') => key.replace(/\\n/g, '\n');
 
+const getPrivateKey = () => {
+  let key = process.env.GOOGLE_DRIVE_PRIVATE_KEY || '';
+  key = key.trim();
+  if ((key.startsWith('"') && key.endsWith('"')) || (key.startsWith("'") && key.endsWith("'"))) {
+    key = key.slice(1, -1);
+  }
+  return normalizePrivateKey(key);
+};
+
 export const isGoogleDriveConfigured = () =>
-  Boolean(
-    process.env.GOOGLE_DRIVE_CLIENT_EMAIL &&
-    process.env.GOOGLE_DRIVE_PRIVATE_KEY &&
-    process.env.GOOGLE_DRIVE_FOLDER_ID
-  );
+  Boolean(process.env.GOOGLE_DRIVE_CLIENT_EMAIL && getPrivateKey());
+
+export const getGoogleDriveFolderId = (folder) => {
+  if (folder === 'certificates') {
+    return process.env.GOOGLE_DRIVE_CERTIFICATES_FOLDER_ID || process.env.GOOGLE_DRIVE_FOLDER_ID;
+  }
+  if (folder === 'payments') {
+    return process.env.GOOGLE_DRIVE_PAYMENTSCREENSHOTS_FOLDER_ID;
+  }
+  return process.env.GOOGLE_DRIVE_CERTIFICATES_FOLDER_ID || process.env.GOOGLE_DRIVE_FOLDER_ID;
+};
 
 const base64Url = (value) =>
   Buffer.from(value)
@@ -35,7 +50,7 @@ const getAccessToken = async () => {
   const signature = crypto
     .createSign('RSA-SHA256')
     .update(unsigned)
-    .sign(normalizePrivateKey(process.env.GOOGLE_DRIVE_PRIVATE_KEY), 'base64')
+    .sign(getPrivateKey(), 'base64')
     .replace(/=/g, '')
     .replace(/\+/g, '-')
     .replace(/\//g, '_');
@@ -75,11 +90,16 @@ const makePublic = async (fileId, accessToken) => {
 };
 
 export const uploadToGoogleDrive = async (buffer, folder, filename, contentType) => {
+  const parentFolderId = getGoogleDriveFolderId(folder);
+  if (!parentFolderId) {
+    throw new Error(`Google Drive folder not configured for ${folder}`);
+  }
+
   const accessToken = await getAccessToken();
   const boundary = `ccl-${Date.now()}`;
   const metadata = {
     name: filename,
-    parents: [process.env.GOOGLE_DRIVE_FOLDER_ID],
+    parents: [parentFolderId],
     description: `Campus Code Labs ${folder} file`,
   };
 
@@ -108,9 +128,14 @@ export const uploadToGoogleDrive = async (buffer, folder, filename, contentType)
   const file = await response.json();
   await makePublic(file.id, accessToken);
 
+  const viewUrl = file.webViewLink || `https://drive.google.com/file/d/${file.id}/view`;
+  const embedUrl = `https://drive.google.com/file/d/${file.id}/preview`;
+
   return {
-    url: file.webViewLink || `https://drive.google.com/file/d/${file.id}/view`,
-    downloadUrl: file.webContentLink,
+    url: viewUrl,
+    viewUrl,
+    embedUrl,
+    downloadUrl: file.webContentLink || `https://drive.google.com/uc?export=download&id=${file.id}`,
     path: file.id,
     provider: 'google-drive',
   };

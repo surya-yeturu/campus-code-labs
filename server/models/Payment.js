@@ -8,7 +8,7 @@ const paymentSchema = new mongoose.Schema(
     course: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', required: true },
     amount: { type: Number, required: true },
     currency: { type: String, default: 'INR' },
-    utrNumber: { type: String, default: '' },
+    utrNumber: { type: String, default: '', unique: true, sparse: true, trim: true },
     screenshotUrl: { type: String, default: '' },
     status: {
       type: String,

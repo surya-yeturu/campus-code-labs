@@ -16,6 +16,8 @@ const bucketMap = {
   payments: 'payments',
 };
 
+const googleDriveFolders = new Set(['certificates', 'payments']);
+
 const ensureLocalDir = (folder) => {
   const dir = path.join(localRoot, folder);
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
@@ -30,7 +32,7 @@ const uploadLocal = (buffer, folder, filename) => {
 };
 
 export const uploadBuffer = async (buffer, folder, filename, contentType = 'application/octet-stream') => {
-  if (folder === 'certificates' && isGoogleDriveConfigured()) {
+  if (googleDriveFolders.has(folder) && isGoogleDriveConfigured()) {
     return uploadToGoogleDrive(buffer, folder, filename, contentType);
   }
 

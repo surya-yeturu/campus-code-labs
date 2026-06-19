@@ -1,11 +1,14 @@
 import Payment from '../models/Payment.js';
 import Application from '../models/Application.js';
 import { createPaymentForApplication, processApplicationApproval } from '../services/enrollmentService.js';
+import { uploadBuffer } from '../services/storageService.js';
+import fs from 'fs';
 
 export const submitManualPayment = async (req, res) => {
   const { applicationId, email, utrNumber } = req.body;
+  const normalizedUtr = String(utrNumber || '').trim();
 
-  if (!applicationId || !email || !utrNumber) {
+  if (!applicationId || !email || !normalizedUtr) {
     return res.status(400).json({ success: false, message: 'Application ID, email, and UTR number are required' });
   }
   if (!req.file) {
@@ -16,6 +19,12 @@ export const submitManualPayment = async (req, res) => {
   if (!application) {
     return res.status(404).json({ success: false, message: 'Application not found' });
   }
+
+  const existingUtr = await Payment.findOne({ utrNumber: normalizedUtr });
+  if (existingUtr && existingUtr.application?.toString() !== application._id.toString()) {
+    return res.status(400).json({ success: false, message: 'UTR number already exists' });
+  }
+
   if (application.status === 'approved') {
     return res.status(400).json({ success: false, message: 'Application already approved' });
   }
@@ -23,14 +32,34 @@ export const submitManualPayment = async (req, res) => {
     return res.status(400).json({ success: false, message: 'Application was rejected' });
   }
 
-  const screenshotUrl = `/uploads/payments/${req.file.filename}`;
-  const payment = await createPaymentForApplication(application, { utrNumber, screenshotUrl });
+  let screenshotUrl = '';
+  try {
+    const ext = req.file.originalname?.match(/\.[a-z0-9]+$/i)?.[0] || '.jpg';
+    const filename = `${applicationId}-${Date.now()}${ext}`;
+    const buffer = req.file.buffer || fs.readFileSync(req.file.path);
+    const upload = await uploadBuffer(buffer, 'payments', filename, req.file.mimetype || 'image/jpeg');
+    screenshotUrl = upload.url || upload.viewUrl;
+    if (req.file.path && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+  } catch (err) {
+    console.error('Payment screenshot upload failed:', err.message);
+    return res.status(500).json({ success: false, message: 'Failed to upload payment screenshot' });
+  }
 
-  res.json({
-    success: true,
-    message: 'Payment submitted for verification',
-    data: { application, payment },
-  });
+  try {
+    const payment = await createPaymentForApplication(application, { utrNumber: normalizedUtr, screenshotUrl });
+    res.json({
+      success: true,
+      message: 'Payment submitted for verification',
+      data: { application, payment },
+    });
+  } catch (err) {
+    if (err.code === 11000 || err.statusCode === 400) {
+      return res.status(400).json({ success: false, message: err.message || 'UTR number already exists' });
+    }
+    throw err;
+  }
 };
 
 export const verifyManualPayment = async (req, res) => {
@@ -77,7 +106,7 @@ export const getPaymentByApplication = async (req, res) => {
     return res.status(400).json({ success: false, message: 'Application ID and email required' });
   }
   const application = await Application.findOne({ applicationId, email: email.toLowerCase() })
-    .populate('course', 'title price')
+    .populate('course', 'title slug')
     .populate('payment');
   if (!application) return res.status(404).json({ success: false, message: 'Application not found' });
   res.json({ success: true, data: application });

@@ -249,8 +249,10 @@ export const generateCertificatePDF = async (data) => {
       .fontSize(9).fillColor('#64748b')
       .text('Campus Code Labs', 116, 462);
 
-    // Partner logos at bottom-most (no boxes / borders)
-    drawPartnerLogos(doc, 525, { height: 36 });
+    // Partner logos at bottom — large size, anchored to page bottom
+    const partnerLogoHeight = 62;
+    const partnerLogoY = pageHeight - 40 - partnerLogoHeight - 6;
+    drawPartnerLogos(doc, partnerLogoY, { height: partnerLogoHeight });
 
     doc.end();
   });
