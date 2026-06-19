@@ -56,20 +56,7 @@ const Navbar = () => {
             <button onClick={toggleTheme} className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-brand-800 transition-colors" aria-label="Toggle theme">
               {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
-            {user ? (
-              <>
-                {user.role === 'admin' && (
-                  <Link to="/admin" className="btn-primary text-sm py-2 hidden sm:inline-flex">
-                    Admin Dashboard
-                  </Link>
-                )}
-                <button onClick={logout} className="text-sm text-slate-600 hover:text-brand-600 hidden sm:block px-3">Logout</button>
-              </>
-            ) : (
-              <>
-                <Link to="/apply" className="btn-primary text-sm py-2">Apply Now</Link>
-              </>
-            )}
+            
             <button className="lg:hidden p-2" onClick={() => setOpen(!open)}>
               {open ? <X /> : <Menu />}
             </button>
