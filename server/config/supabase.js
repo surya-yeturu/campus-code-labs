@@ -1,16 +1,9 @@
-import { createClient } from '@supabase/supabase-js';
+const { createClient } = require('@supabase/supabase-js');
+require('dotenv').config();
 
-let supabase = null;
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
+);
 
-export const isSupabaseConfigured = () =>
-  Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
-
-export const getSupabase = () => {
-  if (!isSupabaseConfigured()) return null;
-  if (!supabase) {
-    supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
-      auth: { persistSession: false },
-    });
-  }
-  return supabase;
-};
+module.exports = supabase;
