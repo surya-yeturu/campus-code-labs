@@ -1,5 +1,6 @@
 import Certificate from '../models/Certificate.js';
 import Internship from '../models/Internship.js';
+import { escapeRegex } from '../utils/escapeRegex.js';
 import { issueCertificateForInternship } from '../services/certificateService.js';
 
 export const generateCertificate = async (req, res) => {
@@ -95,7 +96,7 @@ export const getMyCertificates = async (req, res) => {
 
 export const getAllCertificates = async (req, res) => {
   const { page = 1, limit = 10, search } = req.query;
-  const filter = search ? { certificateId: { $regex: search, $options: 'i' } } : {};
+  const filter = search ? { certificateId: { $regex: escapeRegex(search), $options: 'i' } } : {};
   const skip = (page - 1) * limit;
   const [certificates, total] = await Promise.all([
     Certificate.find(filter)

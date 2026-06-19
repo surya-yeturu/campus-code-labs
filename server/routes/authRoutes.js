@@ -1,10 +1,19 @@
 import express from 'express';
+import rateLimit from 'express-rate-limit';
 import { body } from 'express-validator';
 import { register, login, getProfile, updateProfile } from '../controllers/authController.js';
 import { protect } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 
 const router = express.Router();
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Too many login attempts. Please try again later.' },
+});
 
 router.post(
   '/register',
@@ -21,9 +30,10 @@ router.post(
 
 router.post(
   '/login',
+  loginLimiter,
   [
-    body('email').isEmail(),
-    body('password').notEmpty(),
+    body('email').isEmail().normalizeEmail(),
+    body('password').notEmpty().isLength({ max: 128 }),
   ],
   validate,
   login

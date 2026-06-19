@@ -157,17 +157,33 @@ const Apply = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.internshipSlug) {
+    if (!form.internshipSlug || !selectedInternship) {
       toast.error('Please select an internship program');
+      return;
+    }
+    if (!form.internshipFromDate || !form.duration) {
+      toast.error('Please select duration and start date');
+      return;
+    }
+    if (!form.internshipToDate) {
+      toast.error('End date could not be calculated. Check duration and start date.');
       return;
     }
     setSubmitting(true);
     try {
-      const payload = new FormData();
-      Object.entries(form).forEach(([key, val]) => {
-        if (val) payload.append(key, val);
-      });
-      if (selectedInternship) payload.append('courseId', selectedInternship._id);
+      const payload = {
+        fullName: form.fullName.trim(),
+        email: form.email.trim().toLowerCase(),
+        phone: form.phone.trim(),
+        collegeName: form.collegeName.trim(),
+        branch: form.branch.trim(),
+        year: form.year,
+        duration: form.duration,
+        internshipFromDate: form.internshipFromDate,
+        internshipToDate: form.internshipToDate,
+        projectTitle: form.projectTitle,
+        courseId: selectedInternship._id,
+      };
 
       const { data } = await api.post('/applications', payload);
       toast.success('Application submitted! Complete payment to proceed.');

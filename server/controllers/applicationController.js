@@ -1,6 +1,7 @@
 import Application from '../models/Application.js';
 import Course from '../models/Course.js';
 import { generateApplicationId } from '../utils/generateId.js';
+import { escapeRegex, parseDateOnly } from '../utils/escapeRegex.js';
 import { processApplicationApproval } from '../services/enrollmentService.js';
 
 export const submitApplication = async (req, res) => {
@@ -19,23 +20,19 @@ export const submitApplication = async (req, res) => {
     certificateDate,
   } = req.body;
 
-  if (!fullName || !email || !phone || !collegeName || !branch || !year || !courseId || !duration || !internshipFromDate || !internshipToDate) {
-    return res.status(400).json({ success: false, message: 'All required fields must be provided' });
-  }
-
-  const parsedFromDate = new Date(internshipFromDate);
-  const parsedToDate = new Date(internshipToDate);
-  if (Number.isNaN(parsedFromDate.getTime()) || Number.isNaN(parsedToDate.getTime())) {
+  const parsedFromDate = parseDateOnly(internshipFromDate);
+  const parsedToDate = parseDateOnly(internshipToDate);
+  if (!parsedFromDate || !parsedToDate) {
     return res.status(400).json({ success: false, message: 'Invalid internship dates' });
   }
   if (parsedToDate < parsedFromDate) {
-    return res.status(400).json({ success: false, message: 'To date must be after from date' });
+    return res.status(400).json({ success: false, message: 'To date must be on or after from date' });
   }
 
-  let parsedDate = null;
+  let parsedCertDate = null;
   if (certificateDate) {
-    parsedDate = new Date(certificateDate);
-    if (Number.isNaN(parsedDate.getTime())) {
+    parsedCertDate = parseDateOnly(certificateDate);
+    if (!parsedCertDate) {
       return res.status(400).json({ success: false, message: 'Invalid certificate date' });
     }
   }
@@ -45,23 +42,21 @@ export const submitApplication = async (req, res) => {
     return res.status(404).json({ success: false, message: 'Internship program not found' });
   }
 
-  const resumeUrl = '';
-
   const application = await Application.create({
     applicationId: generateApplicationId(),
-    fullName,
-    email,
-    phone,
-    collegeName,
-    branch,
-    year,
+    fullName: String(fullName).trim(),
+    email: String(email).trim().toLowerCase(),
+    phone: String(phone).trim(),
+    collegeName: String(collegeName).trim(),
+    branch: String(branch).trim(),
+    year: String(year).trim(),
     internshipFromDate: parsedFromDate,
     internshipToDate: parsedToDate,
-    projectTitle: projectTitle || '',
-    ...(parsedDate ? { certificateDate: parsedDate } : {}),
+    projectTitle: projectTitle ? String(projectTitle).trim() : '',
+    ...(parsedCertDate ? { certificateDate: parsedCertDate } : {}),
     course: courseId,
-    duration,
-    resumeUrl,
+    duration: String(duration).trim(),
+    resumeUrl: '',
     status: 'pending',
   });
 
@@ -78,7 +73,7 @@ export const getApplicationStatus = async (req, res) => {
     .populate('course', 'title slug price')
     .populate('payment');
   if (!application) return res.status(404).json({ success: false, message: 'Application not found' });
-  if (email && application.email !== email.toLowerCase()) {
+  if (email && application.email !== String(email).trim().toLowerCase()) {
     return res.status(403).json({ success: false, message: 'Email does not match application' });
   }
   res.json({ success: true, data: application });
@@ -89,10 +84,11 @@ export const getAllApplications = async (req, res) => {
   const filter = {};
   if (status) filter.status = status;
   if (search) {
+    const safe = escapeRegex(search);
     filter.$or = [
-      { fullName: { $regex: search, $options: 'i' } },
-      { email: { $regex: search, $options: 'i' } },
-      { applicationId: { $regex: search, $options: 'i' } },
+      { fullName: { $regex: safe, $options: 'i' } },
+      { email: { $regex: safe, $options: 'i' } },
+      { applicationId: { $regex: safe, $options: 'i' } },
     ];
   }
   const skip = (page - 1) * limit;

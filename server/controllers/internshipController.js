@@ -1,6 +1,7 @@
 import Internship from '../models/Internship.js';
 import Course from '../models/Course.js';
 import { generateInternshipId } from '../utils/generateId.js';
+import { escapeRegex } from '../utils/escapeRegex.js';
 
 export const createInternship = async (req, res) => {
   const { courseId, duration, startDate, endDate, profilePhoto, applicationDetails } = req.body;
@@ -51,7 +52,7 @@ export const getAllInternships = async (req, res) => {
   if (status) filter.status = status;
   if (search) {
     filter.$or = [
-      { internshipId: { $regex: search, $options: 'i' } },
+      { internshipId: { $regex: escapeRegex(search), $options: 'i' } },
     ];
   }
   const skip = (page - 1) * limit;

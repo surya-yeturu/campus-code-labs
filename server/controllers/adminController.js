@@ -4,6 +4,7 @@ import Certificate from '../models/Certificate.js';
 import Internship from '../models/Internship.js';
 import Course from '../models/Course.js';
 import Review from '../models/Review.js';
+import { escapeRegex } from '../utils/escapeRegex.js';
 
 const VERIFIED_PAYMENT_STATUSES = ['paid', 'verified'];
 
@@ -69,10 +70,11 @@ export const getStudents = async (req, res) => {
   const { page = 1, limit = 10, search } = req.query;
   const filter = { role: 'student' };
   if (search) {
+    const safe = escapeRegex(search);
     filter.$or = [
-      { fullName: { $regex: search, $options: 'i' } },
-      { email: { $regex: search, $options: 'i' } },
-      { collegeName: { $regex: search, $options: 'i' } },
+      { fullName: { $regex: safe, $options: 'i' } },
+      { email: { $regex: safe, $options: 'i' } },
+      { collegeName: { $regex: safe, $options: 'i' } },
     ];
   }
   const skip = (page - 1) * limit;

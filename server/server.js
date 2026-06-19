@@ -1,7 +1,9 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import mongoSanitize from 'express-mongo-sanitize';
 import connectDB from './config/db.js';
 import { notFound, errorHandler } from './middleware/errorHandler.js';
 
@@ -22,6 +24,15 @@ import { isSupabaseConfigured } from './config/supabase.js';
 import { isGoogleDriveConfigured } from './services/googleDriveService.js';
 
 dotenv.config();
+
+if (process.env.NODE_ENV === 'production') {
+  const secret = process.env.JWT_SECRET || '';
+  if (secret.length < 32 || /your_super_secret|changeme|example/i.test(secret)) {
+    console.error('FATAL: Set a strong JWT_SECRET (32+ characters) before production deployment.');
+    process.exit(1);
+  }
+}
+
 connectDB();
 
 const emailProvider = (() => {
@@ -33,20 +44,38 @@ const emailProvider = (() => {
 
 const app = express();
 
+const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 200,
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
   message: { success: false, message: 'Too many requests, please try again later' },
 });
 
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+  contentSecurityPolicy: false,
+}));
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+      return;
+    }
+    callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
 }));
 app.use(limiter);
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use('/uploads', express.static('uploads'));
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+app.use(mongoSanitize());
+app.use('/uploads', express.static('uploads', { dotfiles: 'deny', index: false }));
 
 app.get('/api/health', (req, res) => {
   res.json({ success: true, message: 'Campus Code Labs API is running', tagline: 'THINK. CODE. DELIVER.' });

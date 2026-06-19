@@ -114,6 +114,33 @@ npm run dev
 4. Add all env variables to `server/.env`
 5. Set `CLIENT_URL` to your Vercel URL
 
+## Deployment checklist
+
+### Backend (Render / Railway / VPS)
+
+1. Set `NODE_ENV=production`
+2. Set a strong `JWT_SECRET` (32+ random characters)
+3. Set `CLIENT_URL` to your live frontend URL (comma-separate multiple origins if needed)
+4. Set `SERVER_URL` to your live API URL
+5. Configure MongoDB, SMTP, and Google Drive env vars
+6. Run `npm run seed` once on first deploy
+
+### Frontend (Vercel / Netlify)
+
+1. Set `VITE_API_URL=https://your-api.example.com/api`
+2. Build command: `npm run build` (from `client/` folder)
+3. Output directory: `dist`
+
+### Security (already in codebase)
+
+- Helmet security headers
+- MongoDB query sanitization (NoSQL injection protection)
+- Rate limits on login, applications, and payment submissions
+- Input validation on application and login routes
+- Regex escaping on admin search fields
+- Stack traces hidden in production errors
+- JWT secret enforced in production startup
+
 ## License
 
 MIT

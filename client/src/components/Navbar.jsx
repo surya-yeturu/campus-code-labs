@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Sun, Moon } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import LogoMark from './LogoMark';
 
@@ -17,7 +16,6 @@ const navLinks = [
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
-  const { user, logout } = useAuth();
   const { darkMode, toggleTheme } = useTheme();
 
   return (
@@ -53,11 +51,13 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center gap-2">
+            <Link to="/apply" className="btn-primary text-sm py-2 px-4 hidden sm:inline-flex">
+              Apply Now
+            </Link>
             <button onClick={toggleTheme} className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-brand-800 transition-colors" aria-label="Toggle theme">
               {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
-            
-            <button className="lg:hidden p-2" onClick={() => setOpen(!open)}>
+            <button className="lg:hidden p-2" onClick={() => setOpen(!open)} aria-label="Toggle menu">
               {open ? <X /> : <Menu />}
             </button>
           </div>
@@ -85,6 +85,9 @@ const Navbar = () => {
                   {link.label}
                 </NavLink>
               ))}
+              <Link to="/apply" onClick={() => setOpen(false)} className="btn-primary text-sm py-2 px-4 mt-3 inline-flex">
+                Apply Now
+              </Link>
             </motion.div>
           )}
         </AnimatePresence>
