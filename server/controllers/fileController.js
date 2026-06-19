@@ -1,12 +1,24 @@
-const supabase = require('../config/supabase');
+import { getSupabase, isSupabaseConfigured } from '../config/supabase.js';
 
 const BUCKET_NAME = 'student-files';
 
 // ─────────────────────────────────────────
 // UPLOAD FILE
 // ─────────────────────────────────────────
-const uploadFile = async (req, res) => {
+const getConfiguredSupabase = (res) => {
+  if (!isSupabaseConfigured()) {
+    res.status(503).json({ error: 'Supabase is not configured' });
+    return null;
+  }
+
+  return getSupabase();
+};
+
+export const uploadFile = async (req, res) => {
   try {
+    const supabase = getConfiguredSupabase(res);
+    if (!supabase) return;
+
     if (!req.file) {
       return res.status(400).json({ error: 'No file provided' });
     }
@@ -50,8 +62,11 @@ const uploadFile = async (req, res) => {
 // ─────────────────────────────────────────
 // GET FILE BY PATH
 // ─────────────────────────────────────────
-const getFileByPath = async (req, res) => {
+export const getFileByPath = async (req, res) => {
   try {
+    const supabase = getConfiguredSupabase(res);
+    if (!supabase) return;
+
     // Path passed as query param: /files?path=general/123_file.pdf
     const filePath = req.query.path;
 
@@ -85,8 +100,11 @@ const getFileByPath = async (req, res) => {
 // ─────────────────────────────────────────
 // LIST FILES IN A FOLDER/PATH
 // ─────────────────────────────────────────
-const listFilesByFolder = async (req, res) => {
+export const listFilesByFolder = async (req, res) => {
   try {
+    const supabase = getConfiguredSupabase(res);
+    if (!supabase) return;
+
     const folder = req.params.folder || 'general';
 
     const { data, error } = await supabase.storage
@@ -127,5 +145,3 @@ const listFilesByFolder = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 };
-
-module.exports = { uploadFile, getFileByPath, listFilesByFolder };

@@ -11,31 +11,29 @@ const brightBlue = '#1DA1FF';
 const deepBlue = '#005BFF';
 const slate = '#475569';
 
-const drawCompanyLogo = (doc, x, y, scale = 1) => {
-  // Vector logo approximation (CCL mark) so PDF does not depend on external image files.
-  doc.save();
-  doc.lineWidth(10 * scale).strokeColor(brightBlue).lineCap('round');
-  doc.arc(x + 16 * scale, y + 16 * scale, 16 * scale, 40, 320).stroke();
-  doc.strokeColor(deepBlue).lineWidth(8 * scale);
-  doc.arc(x + 24 * scale, y + 16 * scale, 10 * scale, 40, 320).stroke();
-  doc.strokeColor('#E5E7EB').lineWidth(7 * scale);
-  doc
-    .moveTo(x + 33 * scale, y + 7 * scale)
-    .lineTo(x + 33 * scale, y + 26 * scale)
-    .lineTo(x + 45 * scale, y + 26 * scale)
-    .stroke();
-  doc.restore();
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const logosDir = path.join(__dirname, '../assets/logos');
+
+const drawCompanyLogo = (doc, x, y, height = 42) => {
+  const logoPath = path.join(logosDir, 'ccl-logo-sticker.png');
+  const width = height * 1.32;
+
+  if (fs.existsSync(logoPath)) {
+    doc.image(logoPath, x, y, { fit: [width, height], align: 'center', valign: 'center' });
+    return;
+  }
+
+  doc.fillColor(brightBlue).font('Helvetica-Bold').fontSize(height * 0.5).text('CCL', x, y + height * 0.22, {
+    width,
+    align: 'center',
+  });
 };
 
 const drawPartnerLogos = (doc, y, { centered = true, height = 26 } = {}) => {
-  const __dirname = path.dirname(fileURLToPath(import.meta.url));
-  const logosDir = path.join(__dirname, '../assets/logos');
-
   const logoItems = [
     { label: 'AICTE', filename: 'aicte.png' },
-    // MSME provided file is WEBP-in-disguise; use converted PNG if present.
-    { label: 'MSME', filename: 'msme_converted.png' },
-    { label: 'Made in India', filename: 'made-in-india.png' },
+    { label: 'MSME', filename: 'msme-clean.png' },
+    { label: 'Made in India', filename: 'made-in-india-clean.png' },
   ];
 
   const gap = Math.max(28, height * 1.05);
@@ -70,12 +68,12 @@ export const generateOfferLetterPDF = async (data) => {
     doc.on('error', reject);
 
     doc.rect(0, 0, 612, 95).fill(brandBlue);
-    drawCompanyLogo(doc, 42, 26);
+    drawCompanyLogo(doc, 38, 25, 48);
     doc.fillColor('#ffffff').fontSize(22).font('Helvetica-Bold')
-      .text('CAMPUS CODE LABS', 92, 35);
+      .text('CAMPUS CODE LABS', 112, 35);
     doc.fontSize(10).font('Helvetica')
       .fillColor('#bfdbfe')
-      .text('THINK. CODE. DELIVER.', 92, 58);
+      .text('THINK. CODE. DELIVER.', 112, 58);
 
     const orgRef = `CORPORATE${crypto.createHash('sha1').update(String(internshipId)).digest('hex').slice(0, 18).toUpperCase()}`;
 
@@ -142,7 +140,7 @@ export const generateOfferLetterPDF = async (data) => {
     doc.fontSize(10).fillColor('#111827').font('Helvetica-Bold').text('HR Department', 370, yBase);
     doc.fontSize(9).fillColor('#6b7280').font('Helvetica').text('Campus Code Labs', 370, yBase + 16);
 
-    drawPartnerLogos(doc, 742, { height: 26 });
+    drawPartnerLogos(doc, 724, { height: 42 });
 
     doc.end();
   });
@@ -186,11 +184,11 @@ export const generateCertificatePDF = async (data) => {
     doc.rect(18, 18, pageWidth - 36, pageHeight - 36).lineWidth(2).strokeColor(gold).stroke();
     doc.rect(28, 28, pageWidth - 56, pageHeight - 56).lineWidth(0.8).strokeColor('#dbeafe').stroke();
 
-    drawCompanyLogo(doc, 56, 44, 1.35);
+    drawCompanyLogo(doc, 54, 45, 60);
     doc.fillColor(brandBlue).fontSize(34).font('Helvetica-Bold')
-      .text('CAMPUS CODE LABS', 118, 48, { width: 610, align: 'left' });
+      .text('CAMPUS CODE LABS', 142, 48, { width: 560, align: 'left' });
     doc.fontSize(12).font('Helvetica').fillColor(slate)
-      .text('THINK. CODE. DELIVER.', 120, 86, { width: 260, align: 'left' });
+      .text('THINK. CODE. DELIVER.', 144, 86, { width: 260, align: 'left' });
     doc.fontSize(9).fillColor(slate)
       .text(`Certificate ID: ${certificateId}`, 560, 54, { width: 210, align: 'right' })
       .text(`Certificate No: ${certificateNo}`, 560, 69, { width: 210, align: 'right' });
@@ -239,9 +237,9 @@ export const generateCertificatePDF = async (data) => {
         .text(`Internship ID: ${internshipId}`, 90, 382, { width: 620, align: 'center' });
     }
 
-    doc.roundedRect(628, 372, 122, 142, 8).lineWidth(0.8).strokeColor('#dbeafe').stroke();
-    doc.image(qrBuffer, 639, 384, { width: 100, height: 100 });
-    doc.fontSize(8).fillColor('#64748b').text('Scan to open certificate', 638, 492, { width: 102, align: 'center' });
+    doc.roundedRect(628, 352, 122, 142, 8).lineWidth(0.8).strokeColor('#dbeafe').stroke();
+    doc.image(qrBuffer, 639, 364, { width: 100, height: 100 });
+    doc.fontSize(8).fillColor('#64748b').text('Scan to open certificate', 638, 472, { width: 102, align: 'center' });
 
     doc.fontSize(10).fillColor(brandBlue)
       .text('_________________________', 86, 424)
@@ -250,8 +248,8 @@ export const generateCertificatePDF = async (data) => {
       .text('Campus Code Labs', 116, 462);
 
     // Partner logos at bottom — large size, anchored to page bottom
-    const partnerLogoHeight = 62;
-    const partnerLogoY = pageHeight - 40 - partnerLogoHeight - 6;
+    const partnerLogoHeight = 54;
+    const partnerLogoY = pageHeight - 40 - partnerLogoHeight - 2;
     drawPartnerLogos(doc, partnerLogoY, { height: partnerLogoHeight });
 
     doc.end();

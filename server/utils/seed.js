@@ -1,9 +1,9 @@
-import dotenv from 'dotenv';
 import mongoose from 'mongoose';
+import { loadEnv } from '../config/env.js';
 import User from '../models/User.js';
 import Course from '../models/Course.js';
 
-dotenv.config();
+loadEnv();
 
 const courses = [
   {

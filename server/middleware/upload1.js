@@ -1,4 +1,4 @@
-const multer = require('multer');
+import multer from 'multer';
 
 // Store file in memory buffer (not disk)
 const storage = multer.memoryStorage();
@@ -21,4 +21,4 @@ const upload = multer({
   }
 });
 
-module.exports = upload;
+export { upload };

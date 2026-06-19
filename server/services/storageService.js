@@ -16,7 +16,7 @@ const bucketMap = {
   payments: 'payments',
 };
 
-const googleDriveFolders = new Set(['certificates', 'payments']);
+const supabaseFirstFolders = new Set(['certificates', 'payments', 'qr-codes']);
 
 const ensureLocalDir = (folder) => {
   const dir = path.join(localRoot, folder);
@@ -31,23 +31,36 @@ const uploadLocal = (buffer, folder, filename) => {
   return { url: `/uploads/${folder}/${filename}`, path: filePath };
 };
 
+const uploadToSupabase = async (buffer, folder, filename, contentType) => {
+  const supabase = getSupabase();
+  const bucket = bucketMap[folder] || folder;
+  const storagePath = `${folder}/${filename}`;
+  const { error } = await supabase.storage.from(bucket).upload(storagePath, buffer, {
+    contentType,
+    upsert: true,
+  });
+
+  if (error) throw error;
+
+  const { data } = supabase.storage.from(bucket).getPublicUrl(storagePath);
+  return {
+    url: data.publicUrl,
+    publicUrl: data.publicUrl,
+    path: storagePath,
+    bucket,
+    provider: 'supabase',
+  };
+};
+
 export const uploadBuffer = async (buffer, folder, filename, contentType = 'application/octet-stream') => {
-  if (googleDriveFolders.has(folder) && isGoogleDriveConfigured()) {
+  if (isSupabaseConfigured()) {
+    return uploadToSupabase(buffer, folder, filename, contentType);
+  }
+
+  if (!supabaseFirstFolders.has(folder) && isGoogleDriveConfigured()) {
     return uploadToGoogleDrive(buffer, folder, filename, contentType);
   }
 
-  if (isSupabaseConfigured()) {
-    const supabase = getSupabase();
-    const bucket = bucketMap[folder] || folder;
-    const storagePath = `${folder}/${filename}`;
-    const { error } = await supabase.storage.from(bucket).upload(storagePath, buffer, {
-      contentType,
-      upsert: true,
-    });
-    if (error) throw error;
-    const { data } = supabase.storage.from(bucket).getPublicUrl(storagePath);
-    return { url: data.publicUrl, path: storagePath };
-  }
   return uploadLocal(buffer, folder, filename);
 };
 
