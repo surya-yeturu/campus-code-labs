@@ -94,6 +94,25 @@ const getProjectOptions = (internship) => {
   return projectTitlesByDomain.find((domain) => domain.keywords.some((keyword) => text.includes(keyword)))?.projects || fallbackProjects;
 };
 
+const parseDurationWeeks = (duration) => {
+  const match = String(duration).match(/(\d+)/);
+  return match ? parseInt(match[1], 10) : 0;
+};
+
+const calcEndDate = (startDate, duration) => {
+  if (!startDate || !duration) return '';
+  const weeks = parseDurationWeeks(duration);
+  if (!weeks) return '';
+  const [year, month, day] = startDate.split('-').map(Number);
+  const end = new Date(year, month - 1, day);
+  end.setDate(end.getDate() + weeks * 7);
+  return [
+    end.getFullYear(),
+    String(end.getMonth() + 1).padStart(2, '0'),
+    String(end.getDate()).padStart(2, '0'),
+  ].join('-');
+};
+
 const Apply = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -112,7 +131,6 @@ const Apply = () => {
     internshipToDate: '',
     internshipSlug: slug || '',
     projectTitle: '',
-    resume: null,
   });
 
   useEffect(() => {
@@ -121,7 +139,15 @@ const Apply = () => {
       setInternships(list);
       if (slug) {
         const selected = list.find((c) => c.slug === slug);
-        if (selected) setForm((f) => ({ ...f, duration: selected.duration, internshipSlug: slug, projectTitle: '' }));
+        if (selected) {
+          setForm((f) => ({
+            ...f,
+            duration: selected.duration,
+            internshipSlug: slug,
+            projectTitle: '',
+            internshipToDate: calcEndDate(f.internshipFromDate, selected.duration),
+          }));
+        }
       }
     }).finally(() => setLoading(false));
   }, [slug]);
@@ -139,8 +165,7 @@ const Apply = () => {
     try {
       const payload = new FormData();
       Object.entries(form).forEach(([key, val]) => {
-        if (key === 'resume' && val) payload.append('resume', val);
-        else if (key !== 'resume' && val) payload.append(key, val);
+        if (val) payload.append(key, val);
       });
       if (selectedInternship) payload.append('courseId', selectedInternship._id);
 
@@ -218,7 +243,14 @@ const Apply = () => {
               required
               className="input-field mt-1"
               value={form.duration}
-              onChange={(e) => setForm({ ...form, duration: e.target.value })}
+              onChange={(e) => {
+                const duration = e.target.value;
+                setForm((prev) => ({
+                  ...prev,
+                  duration,
+                  internshipToDate: calcEndDate(prev.internshipFromDate, duration),
+                }));
+              }}
             >
               <option value="">Select duration</option>
               {['4 Weeks', '6 Weeks', '8 Weeks', '10 Weeks', '12 Weeks'].map((d) => (
@@ -235,7 +267,14 @@ const Apply = () => {
                 required
                 className="input-field mt-1"
                 value={form.internshipFromDate}
-                onChange={(e) => setForm({ ...form, internshipFromDate: e.target.value })}
+                onChange={(e) => {
+                  const internshipFromDate = e.target.value;
+                  setForm((prev) => ({
+                    ...prev,
+                    internshipFromDate,
+                    internshipToDate: calcEndDate(internshipFromDate, prev.duration),
+                  }));
+                }}
               />
             </div>
             <div>
@@ -259,12 +298,14 @@ const Apply = () => {
               value={form.internshipSlug}
               onChange={(e) => {
                 const selected = internships.find((c) => c.slug === e.target.value);
-                setForm({
-                  ...form,
+                const duration = selected?.duration || '';
+                setForm((prev) => ({
+                  ...prev,
                   internshipSlug: e.target.value,
-                  duration: selected?.duration || '',
+                  duration,
                   projectTitle: '',
-                });
+                  internshipToDate: calcEndDate(prev.internshipFromDate, duration),
+                }));
               }}
             >
               <option value="">Select internship</option>
@@ -288,16 +329,6 @@ const Apply = () => {
                 <option key={title} value={title}>{title}</option>
               ))}
             </select>
-          </div>
-
-          <div>
-            <label className="text-sm font-medium">Resume Upload (optional)</label>
-            <input
-              type="file"
-              accept=".pdf,.doc,.docx"
-              className="input-field mt-1"
-              onChange={(e) => setForm({ ...form, resume: e.target.files[0] })}
-            />
           </div>
 
           <button type="submit" disabled={submitting} className="btn-primary w-full py-3">

@@ -49,7 +49,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static('uploads'));
 
 app.get('/api/health', (req, res) => {
-  res.json({ success: true, message: 'Learnovate API is running', tagline: 'Innovation Through Learning' });
+  res.json({ success: true, message: 'Campus Code Labs API is running', tagline: 'THINK. CODE. DELIVER.' });
 });
 
 app.use('/api/auth', authRoutes);
@@ -81,7 +81,7 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Learnovate Server running on port ${PORT}`);
+  console.log(`Campus Code Labs Server running on port ${PORT}`);
   console.log(`Email provider: ${emailProvider}${emailProvider === 'mock' ? ' (emails logged to console only)' : ''}`);
   console.log(`Storage: ${isGoogleDriveConfigured() ? 'google drive certificates' : isSupabaseConfigured() ? 'supabase' : 'local uploads'}`);
 });

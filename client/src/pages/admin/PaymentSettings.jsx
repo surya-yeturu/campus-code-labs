@@ -4,8 +4,10 @@ import { Save } from 'lucide-react';
 import api from '../../services/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
+const apiBase = import.meta.env.VITE_API_URL || '/api';
+
 const PaymentSettings = () => {
-  const [settings, setSettings] = useState({ upiId: '', qrCodeUrl: '' });
+  const [settings, setSettings] = useState({ upiId: '', hasQrCode: false });
   const [qrFile, setQrFile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -49,8 +51,15 @@ const PaymentSettings = () => {
         </div>
         <div>
           <label className="text-sm font-medium">UPI QR Code</label>
-          {settings.qrCodeUrl && (
-            <img src={settings.qrCodeUrl} alt="Current QR" className="w-40 h-40 mt-2 rounded-lg border" />
+          <p className="text-xs text-slate-500 mt-1 mb-2">
+            Upload your UPI QR image. It is stored in MongoDB and shown to all users on the payment page.
+          </p>
+          {settings.hasQrCode && (
+            <img
+              src={`${apiBase}/payment-settings/qr?t=${settings.updatedAt || Date.now()}`}
+              alt="Current QR"
+              className="w-40 h-40 mt-2 rounded-lg border"
+            />
           )}
           <input
             type="file"

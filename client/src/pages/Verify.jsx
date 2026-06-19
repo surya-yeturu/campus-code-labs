@@ -26,7 +26,7 @@ const Verify = () => {
       setResult(data);
       const shouldOpenCertificate = new URLSearchParams(location.search).get('open') === 'certificate';
       if (shouldOpenCertificate && data.verified && data.data?.certificateUrl) {
-        window.location.href = data.data.certificateUrl;
+        window.location.replace(data.data.certificateUrl);
       }
     } catch {
       setResult({ success: false, verified: false, message: 'Record not found' });

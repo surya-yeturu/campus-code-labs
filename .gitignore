@@ -1,11 +1,10 @@
 # Dependencies
 node_modules/
 
-# Environment (keep .env.example for reference)
+# Environment
 .env
 .env.local
 .env.*.local
-!.env.example
 
 # Build output
 dist/
