@@ -45,7 +45,7 @@ export const submitApplication = async (req, res) => {
     return res.status(404).json({ success: false, message: 'Internship program not found' });
   }
 
-  const resumeUrl = req.file ? `/uploads/resumes/${req.file.filename}` : '';
+  const resumeUrl = '';
 
   const application = await Application.create({
     applicationId: generateApplicationId(),

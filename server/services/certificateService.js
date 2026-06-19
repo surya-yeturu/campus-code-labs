@@ -8,6 +8,13 @@ import { uploadBuffer } from './storageService.js';
 import QRCode from 'qrcode';
 import { sendCertificateEmail } from './emailService.js';
 
+const toAbsoluteUrl = (value) => {
+  if (!value) return '';
+  if (/^https?:\/\//i.test(value)) return value;
+  const base = process.env.SERVER_URL || process.env.API_URL || process.env.CLIENT_URL || '';
+  return `${base.replace(/\/$/, '')}${value.startsWith('/') ? value : `/${value}`}`;
+};
+
 const resolveApplicant = async (internship, applicant) => {
   if (applicant?.fullName && applicant?.email) return applicant;
 
@@ -56,6 +63,7 @@ export const issueCertificateForInternship = async (internship, applicant, { sen
   const certificateId = generateCertificateId();
   const certificateNo = generateCertificateNo();
   const verifyUrl = `${process.env.CLIENT_URL}/verify/${certificateId}`;
+  const certificateOpenUrl = `${verifyUrl}?open=certificate`;
   const issueDate = student.certificateDate ? new Date(student.certificateDate) : new Date();
 
   const pdfBuffer = await generateCertificatePDF({
@@ -73,7 +81,7 @@ export const issueCertificateForInternship = async (internship, applicant, { sen
     internshipFromDate: student.internshipFromDate || internship.startDate,
     internshipToDate: student.internshipToDate || internship.endDate,
     projectTitle: student.projectTitle || internship.projectTitle || '',
-    verifyUrl,
+    verifyUrl: certificateOpenUrl,
   });
 
   let certificateUrl = '';
@@ -81,11 +89,11 @@ export const issueCertificateForInternship = async (internship, applicant, { sen
 
   try {
     const certUpload = await uploadBuffer(pdfBuffer, 'certificates', `${certificateId}.pdf`, 'application/pdf');
-    certificateUrl = certUpload.url || certUpload.secure_url;
+    certificateUrl = certUpload.viewUrl || certUpload.url || certUpload.secure_url;
 
-    const qrBuffer = await QRCode.toBuffer(verifyUrl, { width: 300 });
+    const qrBuffer = await QRCode.toBuffer(certificateOpenUrl, { width: 300 });
     const qrUpload = await uploadBuffer(qrBuffer, 'certificates', `${certificateId}-qr.png`, 'image/png');
-    qrCodeUrl = qrUpload.url || qrUpload.secure_url;
+    qrCodeUrl = toAbsoluteUrl(qrUpload.url || qrUpload.viewUrl || qrUpload.secure_url);
   } catch (err) {
     console.error('Certificate upload error:', err.message);
     certificateUrl = verifyUrl;

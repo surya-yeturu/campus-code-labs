@@ -43,13 +43,13 @@ export const uploadResume = multer({
 }).single('resume');
 
 export const uploadPaymentScreenshot = multer({
-  storage: createStorage('payments'),
+  storage: multer.memoryStorage(),
   fileFilter: imageFilter,
   limits: { fileSize: 5 * 1024 * 1024 },
 }).single('screenshot');
 
 export const uploadQrCode = multer({
-  storage: createStorage('payment-settings'),
+  storage: multer.memoryStorage(),
   fileFilter: imageFilter,
   limits: { fileSize: 2 * 1024 * 1024 },
 }).single('qrCode');
