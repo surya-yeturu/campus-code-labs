@@ -22,9 +22,9 @@ const getEmailProvider = () => {
 
 const createTransporter = () =>
   nodemailer.createTransport({
-    host: process.env.SMTP_HOST || "smtp.gmail.com",
-    port: parseInt(process.env.SMTP_PORT || "465", 10),
-    secure: true,
+    host: process.env.SMTP_HOST,
+    port: 587,
+    secure: false,
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
@@ -59,11 +59,23 @@ const sendEmail = async ({ to, subject, html, attachments = [] }) => {
 
   try {
     const transporter = createTransporter();
-    await transporter.sendMail({ from, to, subject, html, attachments });
+
+    await transporter.verify();
+    console.log("✅ SMTP connection successful");
+
+    await transporter.sendMail({
+      from,
+      to,
+      subject,
+      html,
+      attachments,
+    });
+
     console.log(`[Email] Sent via SMTP → ${to} | ${subject}`);
     return { success: true };
   } catch (err) {
     console.error(`[Email] Failed to send to ${to}:`, err.message);
+    console.error(err);
     throw err;
   }
 };
