@@ -5,6 +5,7 @@ import rateLimit from 'express-rate-limit';
 import mongoSanitize from 'express-mongo-sanitize';
 import { loadEnv } from './config/env.js';
 import connectDB from './config/db.js';
+import startupSeed from './services/startupSeed.js';
 import { notFound, errorHandler } from './middleware/errorHandler.js';
 
 import authRoutes from './routes/authRoutes.js';
@@ -14,6 +15,7 @@ import paymentRoutes from './routes/paymentRoutes.js';
 import certificateRoutes from './routes/certificateRoutes.js';
 import paymentSettingsRoutes from './routes/paymentSettingsRoutes.js';
 import applicationRoutes from './routes/applicationRoutes.js';
+import contactRoutes from './routes/contactRoutes.js';
 import recommendationRoutes from './routes/recommendationRoutes.js';
 import documentRoutes from './routes/documentRoutes.js';
 import noteRoutes from './routes/noteRoutes.js';
@@ -33,7 +35,8 @@ if (process.env.NODE_ENV === 'production') {
   }
 }
 
-connectDB();
+await connectDB();
+await startupSeed();
 
 const emailProvider = (() => {
   const smtp = process.env.SMTP_USER;
@@ -87,6 +90,7 @@ app.use('/api/internships', internshipRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/certificates', certificateRoutes);
 app.use('/api/applications', applicationRoutes);
+app.use('/api/contact', contactRoutes);
 app.use('/api/notes', noteRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/documents', documentRoutes);

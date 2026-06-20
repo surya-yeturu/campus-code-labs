@@ -8,11 +8,14 @@ import { uploadBuffer } from '../services/storageService.js';
 import { issueCertificateForInternship } from '../services/certificateService.js';
 import {
   sendOfferLetterEmail,
+  sendPaymentApprovedEmail,
 } from '../services/emailService.js';
+import { getInternshipPrice, parseDurationWeeks } from '../utils/internshipPricing.js';
 
-const parseDurationWeeks = (duration) => {
-  const match = String(duration).match(/(\d+)/);
-  return match ? parseInt(match[1], 10) : 8;
+const badRequest = (message) => {
+  const err = new Error(message);
+  err.statusCode = 400;
+  return err;
 };
 
 const toAbsoluteUrl = (value) => {
@@ -21,14 +24,44 @@ const toAbsoluteUrl = (value) => {
   return `${(process.env.CLIENT_URL || '').replace(/\/$/, '')}${value.startsWith('/') ? value : `/${value}`}`;
 };
 
-export const processApplicationApproval = async (application, adminUser) => {
+const sendApprovalEmails = async ({ applicant, internship, offerLetterUrl, pdfBuffer, payment, course, certificate }) => {
+  const tasks = [
+    sendOfferLetterEmail(applicant, internship, offerLetterUrl, {
+      filename: `Internship-Offer-Letter-${internship.internshipId}.pdf`,
+      content: pdfBuffer,
+    }),
+    sendPaymentApprovedEmail(applicant, course, payment, certificate),
+  ];
+
+  const results = await Promise.allSettled(tasks);
+  results.forEach((result) => {
+    if (result.status === 'rejected') {
+      console.error('Approval email failed:', result.reason?.message || result.reason);
+    }
+  });
+};
+
+export const processApplicationApproval = async (application, adminUser, { sendEmails = true } = {}) => {
   const course = await Course.findById(application.course);
   if (!course) throw new Error('Course not found');
 
   const paymentId = application.payment?._id || application.payment;
   const payment = paymentId ? await Payment.findById(paymentId) : null;
   if (!payment) throw new Error('Payment record not found');
-  if (payment.status !== 'submitted') throw new Error('Payment must be submitted before approval');
+  if (!['submitted', 'verified'].includes(payment.status)) {
+    throw badRequest('Payment must be submitted before approval');
+  }
+
+  if (payment.status === 'verified' && (application.internship || payment.internship)) {
+    const internship = await Internship.findById(application.internship || payment.internship);
+    if (internship) {
+      application.internship = application.internship || internship._id;
+      application.certificate = application.certificate || internship.certificate;
+      application.status = 'approved';
+      await application.save();
+      return { internship, payment, application, certificate: application.certificate || internship.certificate };
+    }
+  }
 
   const applicant = {
     fullName: application.fullName,
@@ -42,7 +75,7 @@ export const processApplicationApproval = async (application, adminUser) => {
     projectTitle: application.projectTitle || '',
   };
 
-  const weeks = parseDurationWeeks(application.duration);
+  const weeks = parseDurationWeeks(application.duration) || 8;
   const startDate = applicant.internshipFromDate ? new Date(applicant.internshipFromDate) : new Date();
   const endDate = applicant.internshipToDate ? new Date(applicant.internshipToDate) : new Date(startDate);
   if (!applicant.internshipToDate) {
@@ -101,7 +134,7 @@ export const processApplicationApproval = async (application, adminUser) => {
   payment.verifiedAt = new Date();
   await payment.save();
 
-  const certificate = await issueCertificateForInternship(internship, applicant, { sendEmail: true });
+  const certificate = await issueCertificateForInternship(internship, applicant, { sendEmail: sendEmails });
 
   application.internship = internship._id;
   application.certificate = certificate._id;
@@ -110,12 +143,9 @@ export const processApplicationApproval = async (application, adminUser) => {
 
   await Course.findByIdAndUpdate(course._id, { $inc: { enrolledCount: 1 } });
 
-  await Promise.allSettled([
-    sendOfferLetterEmail(applicant, internship, offerLetterUrl, {
-      filename: `Internship-Offer-Letter-${internship.internshipId}.pdf`,
-      content: pdfBuffer,
-    }),
-  ]);
+  if (sendEmails) {
+    sendApprovalEmails({ applicant, internship, offerLetterUrl, pdfBuffer, payment, course, certificate });
+  }
 
   return { internship, payment, application, certificate };
 };
@@ -123,6 +153,12 @@ export const processApplicationApproval = async (application, adminUser) => {
 export const createPaymentForApplication = async (application, { utrNumber, screenshotUrl }) => {
   const course = await Course.findById(application.course);
   if (!course) throw new Error('Course not found');
+  const amount = getInternshipPrice(application.duration);
+  if (!amount) {
+    const err = new Error('Duration must be 4 Weeks, 8 Weeks, or 12 Weeks');
+    err.statusCode = 400;
+    throw err;
+  }
 
   const normalizedUtr = String(utrNumber || '').trim();
   const existingPaymentId = application.payment?._id || application.payment;
@@ -143,7 +179,7 @@ export const createPaymentForApplication = async (application, { utrNumber, scre
     payment = await Payment.create({
       application: application._id,
       course: course._id,
-      amount: course.price,
+      amount,
       utrNumber: normalizedUtr,
       screenshotUrl,
       status: 'submitted',
@@ -153,6 +189,7 @@ export const createPaymentForApplication = async (application, { utrNumber, scre
   } else {
     payment.utrNumber = normalizedUtr;
     payment.screenshotUrl = screenshotUrl;
+    payment.amount = amount;
     payment.status = 'submitted';
     await payment.save();
   }

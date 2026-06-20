@@ -5,12 +5,36 @@ import { Send } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { DURATION_OPTIONS, parseDurationWeeks } from '../utils/internshipPricing';
 
 const fallbackProjects = [
   'Student Portfolio Management Platform',
   'Online Internship Application Tracker',
   'Smart Certificate Verification System',
   'Campus Event Registration Portal',
+];
+
+const terms = [
+  {
+    title: 'Accurate Information',
+    text: 'Please enter your full name and email address accurately. Any spelling mistakes will be final, and no rectifications can be made later.',
+  },
+  {
+    title: 'No Changes Allowed',
+    text: 'Once submitted, there will be no changes permitted to your name, domain, batch, duration, or dates.',
+  },
+  {
+    title: 'No Cancellations',
+    text: 'Once you accept the offer, cancellations will not be entertained.',
+  },
+  {
+    title: 'No Refunds',
+    text: 'All payments made are non-refundable under any circumstances.',
+  },
+  {
+    title: 'Compliance Required',
+    text: 'By proceeding with the application, you agree to adhere to these terms and conditions in their entirety.',
+  },
 ];
 
 const projectTitlesByDomain = [
@@ -94,11 +118,6 @@ const getProjectOptions = (internship) => {
   return projectTitlesByDomain.find((domain) => domain.keywords.some((keyword) => text.includes(keyword)))?.projects || fallbackProjects;
 };
 
-const parseDurationWeeks = (duration) => {
-  const match = String(duration).match(/(\d+)/);
-  return match ? parseInt(match[1], 10) : 0;
-};
-
 const calcEndDate = (startDate, duration) => {
   if (!startDate || !duration) return '';
   const weeks = parseDurationWeeks(duration);
@@ -131,6 +150,7 @@ const Apply = () => {
     internshipToDate: '',
     internshipSlug: slug || '',
     projectTitle: '',
+    termsAccepted: false,
   });
 
   useEffect(() => {
@@ -140,12 +160,13 @@ const Apply = () => {
       if (slug) {
         const selected = list.find((c) => c.slug === slug);
         if (selected) {
+          const duration = DURATION_OPTIONS.includes(selected.duration) ? selected.duration : '8 Weeks';
           setForm((f) => ({
             ...f,
-            duration: selected.duration,
+            duration,
             internshipSlug: slug,
             projectTitle: '',
-            internshipToDate: calcEndDate(f.internshipFromDate, selected.duration),
+            internshipToDate: calcEndDate(f.internshipFromDate, duration),
           }));
         }
       }
@@ -167,6 +188,10 @@ const Apply = () => {
     }
     if (!form.internshipToDate) {
       toast.error('End date could not be calculated. Check duration and start date.');
+      return;
+    }
+    if (!form.termsAccepted) {
+      toast.error('Please accept the terms and conditions');
       return;
     }
     setSubmitting(true);
@@ -210,10 +235,38 @@ const Apply = () => {
           </p>
         </motion.div>
 
-        <motion.form
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
+          className="glass-card p-8 mb-6"
+        >
+          <h2 className="font-display text-xl font-bold mb-5">
+            Terms & Conditions <span className="text-red-500">*</span>
+          </h2>
+          <ol className="list-decimal pl-5 space-y-2 text-slate-700 dark:text-slate-300">
+            {terms.map((term) => (
+              <li key={term.title}>
+                <strong>{term.title}:</strong> {term.text}
+              </li>
+            ))}
+          </ol>
+          <label className="mt-8 flex items-center gap-3 text-slate-800 dark:text-slate-200">
+            <input
+              type="checkbox"
+              required
+              checked={form.termsAccepted}
+              onChange={(e) => setForm({ ...form, termsAccepted: e.target.checked })}
+              className="h-5 w-5 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+            />
+            <span>Yes, I agree.</span>
+          </label>
+        </motion.div>
+
+        <motion.form
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
           onSubmit={handleSubmit}
           className="glass-card p-8 space-y-5"
         >
@@ -269,7 +322,7 @@ const Apply = () => {
               }}
             >
               <option value="">Select duration</option>
-              {['4 Weeks', '6 Weeks', '8 Weeks', '10 Weeks', '12 Weeks'].map((d) => (
+              {DURATION_OPTIONS.map((d) => (
                 <option key={d} value={d}>{d}</option>
               ))}
             </select>
@@ -314,7 +367,7 @@ const Apply = () => {
               value={form.internshipSlug}
               onChange={(e) => {
                 const selected = internships.find((c) => c.slug === e.target.value);
-                const duration = selected?.duration || '';
+                const duration = DURATION_OPTIONS.includes(selected?.duration) ? selected.duration : '8 Weeks';
                 setForm((prev) => ({
                   ...prev,
                   internshipSlug: e.target.value,

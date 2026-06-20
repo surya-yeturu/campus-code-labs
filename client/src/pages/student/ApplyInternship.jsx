@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import { DURATION_OPTIONS } from '../../utils/internshipPricing';
 
 const ApplyInternship = () => {
   const { slug } = useParams();
@@ -26,7 +27,10 @@ const ApplyInternship = () => {
   useEffect(() => {
     api.get(`/courses/${slug}`).then(({ data }) => {
       setCourse(data.data);
-      setForm((f) => ({ ...f, duration: data.data.duration }));
+      setForm((f) => ({
+        ...f,
+        duration: DURATION_OPTIONS.includes(data.data.duration) ? data.data.duration : '8 Weeks',
+      }));
     }).catch(() => toast.error('Course not found')).finally(() => setLoading(false));
   }, [slug]);
 
@@ -64,16 +68,14 @@ const ApplyInternship = () => {
   return (
     <div className="max-w-2xl">
       <h2 className="font-display text-2xl font-bold mb-2">Apply for Internship</h2>
-      <p className="text-slate-600 mb-6">{course.title} — ₹{course.price}</p>
+      <p className="text-slate-600 mb-6">{course.title}</p>
       <form onSubmit={handleSubmit} className="glass-card p-6 space-y-4">
         <div>
           <label className="text-sm font-medium">Duration</label>
           <select className="input-field" required value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })}>
-            <option value={course.duration}>{course.duration}</option>
-            <option value="4 Weeks">4 Weeks</option>
-            <option value="6 Weeks">6 Weeks</option>
-            <option value="8 Weeks">8 Weeks</option>
-            <option value="10 Weeks">10 Weeks</option>
+            {DURATION_OPTIONS.map((duration) => (
+              <option key={duration} value={duration}>{duration}</option>
+            ))}
           </select>
         </div>
         <div className="grid sm:grid-cols-2 gap-4">

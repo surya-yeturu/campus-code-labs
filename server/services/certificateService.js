@@ -126,7 +126,7 @@ export const issueCertificateForInternship = async (internship, applicant, { sen
   await internship.save();
 
   if (sendEmail) {
-    await sendCertificateEmail(student, certificate, certificateUrl, {
+    sendCertificateEmail(student, certificate, certificateUrl, {
       filename: `Internship-Certificate-${certificate.certificateNo || certificate.certificateId}.pdf`,
       content: pdfBuffer,
     }).catch(console.error);

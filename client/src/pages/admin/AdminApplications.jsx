@@ -31,7 +31,7 @@ const AdminApplications = () => {
     setActionId(id);
     try {
       await api.post(`/applications/${id}/approve`);
-      toast.success('Application approved — certificate and offer letter emailed');
+      toast.success('Application approved - certificate and offer letter emailed');
       fetchData(applications.pagination?.page || 1);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Approval failed');
@@ -93,7 +93,7 @@ const AdminApplications = () => {
                   <td className="p-4">
                     <p className="font-medium">{app.fullName}</p>
                     <p className="text-xs text-slate-500">{app.email}</p>
-                    <p className="text-xs text-slate-500">{app.collegeName} · {app.year}</p>
+                    <p className="text-xs text-slate-500">{app.collegeName} - {app.year}</p>
                     {app.certificateDate && (
                       <p className="text-xs text-slate-400">Cert date: {new Date(app.certificateDate).toLocaleDateString()}</p>
                     )}
@@ -107,14 +107,14 @@ const AdminApplications = () => {
                   <td className="p-4 hidden md:table-cell">
                     {app.payment ? (
                       <div>
-                        <p className="text-xs">UTR: {app.payment.utrNumber || '—'}</p>
+                        <p className="text-xs">UTR: {app.payment.utrNumber || '-'}</p>
                         {app.payment.screenshotUrl && (
                           <a href={app.payment.screenshotUrl} target="_blank" rel="noreferrer" className="text-brand-600 text-xs flex items-center gap-1 mt-1">
                             <Eye className="w-3 h-3" /> View Screenshot
                           </a>
                         )}
                       </div>
-                    ) : '—'}
+                    ) : '-'}
                   </td>
                   <td className="p-4">
                     <div className="flex gap-2">

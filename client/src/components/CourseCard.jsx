@@ -1,6 +1,10 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Clock, Wifi, ArrowRight } from 'lucide-react';
+import { DURATION_OPTIONS } from '../utils/internshipPricing';
+
+const durationLabel = DURATION_OPTIONS.map((duration) => duration.replace(' Weeks', '')).join(', ');
+
 const CourseCard = ({ course, index = 0 }) => {
   const detailPath = `/internships/${course.slug}`;
   const applyPath = `/apply/${course.slug}`;
@@ -31,7 +35,7 @@ const CourseCard = ({ course, index = 0 }) => {
         ))}
       </div>
       <div className="flex items-center gap-4 text-sm text-slate-500 mb-4">
-        <span className="flex items-center gap-1"><Clock className="w-4 h-4" />{course.duration}</span>
+        <span className="flex items-center gap-1"><Clock className="w-4 h-4" />{durationLabel} Weeks</span>
         <span className="flex items-center gap-1"><Wifi className="w-4 h-4" />{course.mode}</span>
       </div>
       <div className="flex items-center justify-end pt-4 border-t border-slate-100 dark:border-slate-700">

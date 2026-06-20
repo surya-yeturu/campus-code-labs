@@ -5,6 +5,7 @@ import { Upload, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { getInternshipPrice } from '../utils/internshipPricing';
 
 const apiBase = import.meta.env.VITE_API_URL || '/api';
 
@@ -108,6 +109,7 @@ const ApplyPayment = () => {
 
   const isSubmitted = ['payment_submitted', 'approved'].includes(application?.status);
   const isApproved = application?.status === 'approved';
+  const paymentAmount = application?.payment?.amount || getInternshipPrice(application?.duration);
 
   return (
     <div className="py-12 min-h-[80vh]">
@@ -115,6 +117,11 @@ const ApplyPayment = () => {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
           <h1 className="section-title">Complete Payment</h1>
           <p className="text-slate-600 mt-2">{application?.course?.title}</p>
+          {paymentAmount > 0 && (
+            <p className="text-lg font-semibold text-brand-700 mt-2">
+              Pay Rs. {paymentAmount} for {application?.duration}
+            </p>
+          )}
         </motion.div>
 
         {isApproved ? (
@@ -135,8 +142,36 @@ const ApplyPayment = () => {
           </div>
         ) : (
           <>
+            <div className="glass-card overflow-hidden mb-6">
+              <div className="bg-slate-200 dark:bg-brand-800 px-6 py-4">
+                <h2 className="font-display text-lg font-bold">Payment Details</h2>
+              </div>
+              <div className="p-8 space-y-5 text-slate-700 dark:text-slate-300">
+                <h3 className="font-bold text-lg text-slate-900 dark:text-white">
+                  Slash Mark Virtual Training + Project-Based Internship Program
+                </h3>
+                <p>
+                  The training and project-based internship are <strong>completely free of cost.</strong>
+                  <br />
+                  <em>(Certification charges are applicable)</em>
+                </p>
+                <ul className="list-disc pl-8 space-y-1">
+                  <li>No Processing Fee</li>
+                  <li>No Additional Charges</li>
+                  <li>No Training Fee</li>
+                </ul>
+                <p>
+                  <strong>Note:</strong> Certification charges are mandatory for receiving the official certificate after
+                  successful completion of the program.
+                </p>
+              </div>
+            </div>
+
             <div className="glass-card p-8 mb-6 text-center">
               <h3 className="font-semibold mb-4">Pay via UPI</h3>
+              {paymentAmount > 0 && (
+                <p className="text-2xl font-bold text-brand-700 mb-4">Rs. {paymentAmount}</p>
+              )}
               {settings?.hasQrCode && (
                 <img
                   src={`${apiBase}/payment-settings/qr?t=${settings.updatedAt || Date.now()}`}

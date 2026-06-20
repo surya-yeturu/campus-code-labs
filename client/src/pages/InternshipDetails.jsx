@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  ArrowRight, Clock, IndianRupee, Wifi, CheckCircle,
+  ArrowRight, Clock, Wifi, CheckCircle,
   BookOpen, Award, FolderKanban,
 } from 'lucide-react';
 import api from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { DURATION_OPTIONS } from '../utils/internshipPricing';
 
 const benefits = [
   'Offer Letter on enrollment',
@@ -16,6 +17,8 @@ const benefits = [
   'Learning Materials & Notes',
   'Industry Exposure',
 ];
+
+const durationLabel = DURATION_OPTIONS.map((duration) => duration.replace(' Weeks', '')).join(', ');
 
 const InternshipDetails = () => {
   const { slug } = useParams();
@@ -53,13 +56,10 @@ const InternshipDetails = () => {
 
           <div className="flex flex-wrap gap-4 mt-6 text-sm text-slate-500">
             <span className="flex items-center gap-2 glass-card px-4 py-2">
-              <Clock className="w-4 h-4 text-brand-600" /> {internship.duration}
+              <Clock className="w-4 h-4 text-brand-600" /> {durationLabel} Weeks
             </span>
             <span className="flex items-center gap-2 glass-card px-4 py-2">
               <Wifi className="w-4 h-4 text-brand-600" /> {internship.mode}
-            </span>
-            <span className="flex items-center gap-2 glass-card px-4 py-2">
-              <IndianRupee className="w-4 h-4 text-brand-600" /> ₹{internship.price?.toLocaleString()}
             </span>
           </div>
         </motion.div>

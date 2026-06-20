@@ -3,6 +3,7 @@ import Course from '../models/Course.js';
 import { generateApplicationId } from '../utils/generateId.js';
 import { escapeRegex, parseDateOnly } from '../utils/escapeRegex.js';
 import { processApplicationApproval } from '../services/enrollmentService.js';
+import { isSupportedDuration } from '../utils/internshipPricing.js';
 
 export const submitApplication = async (req, res) => {
   const {
@@ -27,6 +28,9 @@ export const submitApplication = async (req, res) => {
   }
   if (parsedToDate < parsedFromDate) {
     return res.status(400).json({ success: false, message: 'To date must be on or after from date' });
+  }
+  if (!isSupportedDuration(duration)) {
+    return res.status(400).json({ success: false, message: 'Duration must be 4 Weeks, 8 Weeks, or 12 Weeks' });
   }
 
   let parsedCertDate = null;
@@ -109,17 +113,24 @@ export const getAllApplications = async (req, res) => {
 };
 
 export const approveApplication = async (req, res) => {
-  const application = await Application.findById(req.params.id).populate('payment');
-  if (!application) return res.status(404).json({ success: false, message: 'Application not found' });
-  if (application.status === 'approved') {
-    return res.status(400).json({ success: false, message: 'Application already approved' });
-  }
-  if (application.status !== 'payment_submitted') {
-    return res.status(400).json({ success: false, message: 'Payment must be submitted before approval' });
-  }
+  try {
+    const application = await Application.findById(req.params.id).populate('payment');
+    if (!application) return res.status(404).json({ success: false, message: 'Application not found' });
+    if (application.status === 'approved') {
+      return res.status(400).json({ success: false, message: 'Application already approved' });
+    }
+    if (application.status !== 'payment_submitted') {
+      return res.status(400).json({ success: false, message: 'Payment must be submitted before approval' });
+    }
 
-  const result = await processApplicationApproval(application, req.user);
-  res.json({ success: true, message: 'Application approved', data: result });
+    const result = await processApplicationApproval(application, req.user);
+    res.json({ success: true, message: 'Application approved', data: result });
+  } catch (err) {
+    res.status(err.statusCode || 500).json({
+      success: false,
+      message: err.message || 'Approval failed',
+    });
+  }
 };
 
 export const rejectApplication = async (req, res) => {

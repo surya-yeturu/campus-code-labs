@@ -82,13 +82,13 @@ const AdminPayments = () => {
             {payments.data?.map((p) => (
               <tr key={p._id} className="border-t border-slate-100 dark:border-slate-800">
                 <td className="p-4">
-                  <p>{p.user?.fullName || p.application?.fullName || '—'}</p>
+                  <p>{p.user?.fullName || p.application?.fullName || '-'}</p>
                   <p className="text-xs text-slate-500">{p.user?.email || p.application?.email}</p>
                 </td>
                 <td className="p-4">{p.course?.title}</td>
-                <td className="p-4 font-semibold">₹{p.amount}</td>
+                <td className="p-4 font-semibold">Rs. {p.amount}</td>
                 <td className="p-4">
-                  <p className="text-xs">{p.utrNumber || '—'}</p>
+                  <p className="text-xs">{p.utrNumber || '-'}</p>
                   {p.screenshotUrl && (
                     <button
                       type="button"

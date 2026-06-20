@@ -63,25 +63,29 @@ export const submitManualPayment = async (req, res) => {
 };
 
 export const verifyManualPayment = async (req, res) => {
-  const payment = await Payment.findById(req.params.id).populate('application');
-  if (!payment) return res.status(404).json({ success: false, message: 'Payment not found' });
-  if (payment.status === 'verified') {
-    return res.status(400).json({ success: false, message: 'Payment already verified' });
+  try {
+    const payment = await Payment.findById(req.params.id).populate('application');
+    if (!payment) return res.status(404).json({ success: false, message: 'Payment not found' });
+    if (!['submitted', 'verified'].includes(payment.status)) {
+      return res.status(400).json({ success: false, message: 'Payment not ready for verification' });
+    }
+
+    const application = payment.application || await Application.findOne({ payment: payment._id });
+    if (!application) return res.status(404).json({ success: false, message: 'Application not found' });
+
+    const result = await processApplicationApproval(application, req.user);
+
+    res.json({
+      success: true,
+      message: 'Payment verified - certificate and offer letter emailed',
+      data: result,
+    });
+  } catch (err) {
+    res.status(err.statusCode || 500).json({
+      success: false,
+      message: err.message || 'Verification failed',
+    });
   }
-  if (payment.status !== 'submitted') {
-    return res.status(400).json({ success: false, message: 'Payment not ready for verification' });
-  }
-
-  const application = payment.application || await Application.findOne({ payment: payment._id });
-  if (!application) return res.status(404).json({ success: false, message: 'Application not found' });
-
-  const result = await processApplicationApproval(application, req.user);
-
-  res.json({
-    success: true,
-    message: 'Payment verified — certificate and offer letter emailed',
-    data: result,
-  });
 };
 
 export const rejectManualPayment = async (req, res) => {

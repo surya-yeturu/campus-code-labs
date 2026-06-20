@@ -33,6 +33,14 @@ const createTransporter = () =>
 const getFromAddress = () =>
   process.env.EMAIL_FROM || 'Campus Code Labs <no-reply@campuscodelabs.com>';
 
+const escapeHtml = (value) =>
+  String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
 const sendEmail = async ({ to, subject, html, attachments = [] }) => {
   const provider = getEmailProvider();
   const from = getFromAddress();
@@ -125,5 +133,28 @@ export const sendRecommendationEmail = (user, fileUrl) =>
     subject: 'Your Recommendation Letter - Campus Code Labs',
     html: recommendationTemplate(user, fileUrl),
   });
+
+export const sendContactMessageEmail = ({ name, email, message }) => {
+  const contactEmail = process.env.CONTACT_EMAIL || 'campuscodelabs@gmail.com';
+  const safeName = escapeHtml(String(name || '').trim());
+  const safeEmail = escapeHtml(String(email || '').trim());
+  const safeMessage = escapeHtml(String(message || '').trim()).replace(/\n/g, '<br />');
+
+  return sendEmail({
+    to: contactEmail,
+    subject: `New contact message from ${safeName}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; color: #0f172a; line-height: 1.6;">
+        <h2 style="color: #0f2744;">New Contact Message</h2>
+        <p><strong>Name:</strong> ${safeName}</p>
+        <p><strong>Email:</strong> <a href="mailto:${safeEmail}">${safeEmail}</a></p>
+        <p><strong>Message:</strong></p>
+        <div style="padding: 12px; border-left: 4px solid #1DA1FF; background: #f8fafc;">
+          ${safeMessage}
+        </div>
+      </div>
+    `,
+  });
+};
 
 export default sendEmail;

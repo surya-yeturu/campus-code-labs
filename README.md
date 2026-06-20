@@ -69,8 +69,7 @@ npm run dev
 
 ### Default Admin Login
 
-- Email: `admin@learnovate.com`
-- Password: `Admin@123456`
+
 
 ## Environment Variables
 

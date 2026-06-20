@@ -16,10 +16,10 @@ const AdminDashboard = () => {
   if (!stats) return null;
 
   const cards = [
-    { label: 'Total Students', value: stats.totalStudents, icon: Users, color: 'from-blue-500 to-blue-700' },
-    { label: 'Total Revenue', value: `₹${stats.totalRevenue?.toLocaleString()}`, icon: IndianRupee, color: 'from-green-500 to-green-700' },
+    { label: 'Total Applicants', value: stats.totalApplicants || 0, icon: Users, color: 'from-blue-500 to-blue-700' },
+    { label: 'Total Revenue', value: `Rs. ${stats.totalRevenue?.toLocaleString() || 0}`, icon: IndianRupee, color: 'from-green-500 to-green-700' },
     { label: 'Certificates Issued', value: stats.totalCertificates, icon: Award, color: 'from-purple-500 to-purple-700' },
-    { label: 'Active Internships', value: stats.activeInternships, icon: Briefcase, color: 'from-amber-500 to-amber-700' },
+    { label: 'Pending Approvals', value: stats.pendingApprovals || 0, icon: Briefcase, color: 'from-amber-500 to-amber-700' },
   ];
 
   return (
@@ -44,8 +44,8 @@ const AdminDashboard = () => {
           <div className="space-y-3">
             {stats.recentPayments?.map((p) => (
               <div key={p._id} className="flex justify-between p-3 rounded-lg bg-slate-50 dark:bg-brand-900/50">
-                <span>{p.user?.fullName || p.application?.fullName} — {p.course?.title}</span>
-                <span className="font-semibold text-green-600">₹{p.amount}</span>
+                <span>{p.user?.fullName || p.application?.fullName} - {p.course?.title}</span>
+                <span className="font-semibold text-green-600">Rs. {p.amount}</span>
               </div>
             ))}
           </div>

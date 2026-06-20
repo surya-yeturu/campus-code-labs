@@ -40,7 +40,7 @@ export const registrationTemplate = (user) =>
 export const paymentSuccessTemplate = (user, payment, course) =>
   wrap(`
     <h2>Payment Successful!</h2>
-    <p>Hi ${applicantName(user)}, your payment of <strong>₹${payment.amount}</strong> for <strong>${course.title}</strong> has been confirmed.</p>
+    <p>Hi ${applicantName(user)}, your payment of <strong>Rs. ${payment.amount}</strong> for <strong>${course.title}</strong> has been confirmed.</p>
     <p>Receipt: ${payment.receipt}</p>
     <p>Your internship offer letter and certificate will be emailed after admin verification.</p>
   `);
@@ -96,7 +96,7 @@ export const paymentApprovedTemplate = (user, course, payment, certificate) =>
   wrap(`
     <h2>Application Approved</h2>
     <p>Hi ${applicantName(user)},</p>
-    <p>Your payment of <strong>₹${payment.amount}</strong> for <strong>${course.title}</strong> has been verified and your application is approved.</p>
+    <p>Your payment of <strong>Rs. ${payment.amount}</strong> for <strong>${course.title}</strong> has been verified and your application is approved.</p>
     <p>Your internship offer letter and certificate have been sent to this email address from Campus Code Labs.</p>
     ${certificate ? `<p>Certificate ID: <strong>${certificate.certificateId}</strong></p>
     <a href="${process.env.CLIENT_URL}/verify/${certificate.certificateId}" class="btn">Verify Certificate</a>` : ''}
