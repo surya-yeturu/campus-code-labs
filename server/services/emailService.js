@@ -23,7 +23,7 @@ const getEmailProvider = () => {
 const createTransporter = () =>
   nodemailer.createTransport({
     host: process.env.SMTP_HOST || "smtp.gmail.com",
-    port: parseInt(process.env.SMTP_PORT || "587", 10),
+    port: parseInt(process.env.SMTP_PORT || "465", 10),
     secure: true,
     auth: {
       user: process.env.SMTP_USER,
