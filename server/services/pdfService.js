@@ -13,6 +13,7 @@ const slate = '#475569';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const logosDir = path.join(__dirname, '../assets/logos');
+const signaturesDir = path.join(__dirname, '../assets/signatures');
 
 const drawCompanyLogo = (doc, x, y, height = 42) => {
   const logoPath = path.join(logosDir, 'ccl-logo-sticker.png');
@@ -55,6 +56,27 @@ const drawPartnerLogos = (doc, y, { centered = true, height = 26 } = {}) => {
         .text(item.label, x, y + height * 0.24, { width: widths[index], align: 'center' });
     }
   });
+};
+
+const drawSignature = (doc, filename, x, y, { width = 130, height = 42 } = {}) => {
+  const signaturePath = path.join(signaturesDir, filename);
+
+  if (!fs.existsSync(signaturePath)) return false;
+
+  doc.image(signaturePath, x, y, { fit: [width, height], align: 'center', valign: 'center' });
+  return true;
+};
+
+const offerSignaturePlacements = {
+  nandhaKishore: { x: 21, yOffsetFromName: -31, width: 178, height: 35 },
+  akansha: { x: 312, yOffsetFromName: -31, width: 146, height: 35 },
+};
+
+const certificateSignaturePlacement = {
+  x: 66,
+  y: 398,
+  width: 176,
+  height: 34,
 };
 
 export const generateOfferLetterPDF = async (data) => {
@@ -128,17 +150,29 @@ export const generateOfferLetterPDF = async (data) => {
 
     doc.moveDown(1);
     doc.fontSize(9.5).fillColor('#4b5563').text(
-      'This offer letter is generated electronically by Campus Code Labs and is valid without a physical signature.',
+      'This offer letter is generated electronically by Campus Code Labs.',
       { align: 'justify', lineGap: 3 }
     );
 
     // Signature block (bottom)
     const yBase = 640;
-    doc.fontSize(10).fillColor('#111827').font('Helvetica-Bold').text('Authorized Signatory', 60, yBase);
-    doc.fontSize(9).fillColor('#6b7280').font('Helvetica').text('Campus Code Labs', 60, yBase + 16);
+    drawSignature(doc, 'nandha-kishore.png', offerSignaturePlacements.nandhaKishore.x, yBase + offerSignaturePlacements.nandhaKishore.yOffsetFromName, {
+      width: offerSignaturePlacements.nandhaKishore.width,
+      height: offerSignaturePlacements.nandhaKishore.height,
+    });
+    doc.fontSize(10).fillColor('#111827').font('Helvetica-Bold').text('P. Nandha Kishore', 60, yBase);
+    doc.fontSize(9).fillColor('#6b7280').font('Helvetica')
+      .text('Authorized Signatory', 60, yBase + 16)
+      .text('Campus Code Labs', 60, yBase + 32);
 
-    doc.fontSize(10).fillColor('#111827').font('Helvetica-Bold').text('HR Department', 370, yBase);
-    doc.fontSize(9).fillColor('#6b7280').font('Helvetica').text('Campus Code Labs', 370, yBase + 16);
+    drawSignature(doc, 'akansha.png', offerSignaturePlacements.akansha.x, yBase + offerSignaturePlacements.akansha.yOffsetFromName, {
+      width: offerSignaturePlacements.akansha.width,
+      height: offerSignaturePlacements.akansha.height,
+    });
+    doc.fontSize(10).fillColor('#111827').font('Helvetica-Bold').text('Akansha', 370, yBase);
+    doc.fontSize(9).fillColor('#6b7280').font('Helvetica')
+      .text('HR Department', 370, yBase + 16)
+      .text('Campus Code Labs', 370, yBase + 32);
 
     drawPartnerLogos(doc, 724, { height: 42 });
 
@@ -241,11 +275,16 @@ export const generateCertificatePDF = async (data) => {
     doc.image(qrBuffer, 639, 364, { width: 100, height: 100 });
     doc.fontSize(8).fillColor('#64748b').text('Scan to open certificate', 638, 472, { width: 102, align: 'center' });
 
+    drawSignature(doc, 'nandha-kishore.png', certificateSignaturePlacement.x, certificateSignaturePlacement.y, {
+      width: certificateSignaturePlacement.width,
+      height: certificateSignaturePlacement.height,
+    });
     doc.fontSize(10).fillColor(brandBlue)
       .text('_________________________', 86, 424)
-      .text('Authorized Signatory', 104, 446)
+      .text('P. Nandha Kishore', 102, 446)
       .fontSize(9).fillColor('#64748b')
-      .text('Campus Code Labs', 116, 462);
+      .text('Authorized Signatory', 104, 462)
+      .text('Campus Code Labs', 116, 477);
 
     // Partner logos at bottom — large size, anchored to page bottom
     const partnerLogoHeight = 54;

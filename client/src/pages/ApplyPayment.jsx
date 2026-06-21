@@ -1,38 +1,40 @@
-import { useEffect, useState } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Upload, CheckCircle } from 'lucide-react';
-import toast from 'react-hot-toast';
-import api from '../services/api';
-import LoadingSpinner from '../components/LoadingSpinner';
-import { getInternshipPrice } from '../utils/internshipPricing';
+import { useEffect, useState } from "react";
+import { useParams, useSearchParams } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Upload, CheckCircle } from "lucide-react";
+import toast from "react-hot-toast";
+import api from "../services/api";
+import LoadingSpinner from "../components/LoadingSpinner";
+import { getInternshipPrice } from "../utils/internshipPricing";
 
-const apiBase = import.meta.env.VITE_API_URL || '/api';
+const apiBase = import.meta.env.VITE_API_URL || "/api";
 
 const ApplyPayment = () => {
   const { applicationId } = useParams();
   const [searchParams] = useSearchParams();
-  const [email, setEmail] = useState(searchParams.get('email') || '');
+  const [email, setEmail] = useState(searchParams.get("email") || "");
   const [application, setApplication] = useState(null);
   const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [verified, setVerified] = useState(false);
-  const [form, setForm] = useState({ utrNumber: '', screenshot: null });
+  const [form, setForm] = useState({ utrNumber: "", screenshot: null });
 
   const fetchApplication = async (userEmail) => {
     if (!userEmail) return;
     setLoading(true);
     try {
       const [{ data: appData }, { data: settingsData }] = await Promise.all([
-        api.get(`/applications/status/${applicationId}`, { params: { email: userEmail } }),
-        api.get('/payment-settings'),
+        api.get(`/applications/status/${applicationId}`, {
+          params: { email: userEmail },
+        }),
+        api.get("/payment-settings"),
       ]);
       setApplication(appData.data);
       setSettings(settingsData.data);
       setVerified(true);
     } catch {
-      toast.error('Application not found or email mismatch');
+      toast.error("Application not found or email mismatch");
       setApplication(null);
       setVerified(false);
     } finally {
@@ -41,7 +43,7 @@ const ApplyPayment = () => {
   };
 
   useEffect(() => {
-    if (searchParams.get('email')) fetchApplication(searchParams.get('email'));
+    if (searchParams.get("email")) fetchApplication(searchParams.get("email"));
   }, [applicationId, searchParams]);
 
   const handleEmailVerify = (e) => {
@@ -52,22 +54,24 @@ const ApplyPayment = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.screenshot) {
-      toast.error('Please upload payment screenshot');
+      toast.error("Please upload payment screenshot");
       return;
     }
     setSubmitting(true);
     try {
       const payload = new FormData();
-      payload.append('applicationId', applicationId);
-      payload.append('email', email);
-      payload.append('utrNumber', form.utrNumber);
-      payload.append('screenshot', form.screenshot);
-      await api.post('/payments/submit', payload);
-      toast.success('Payment submitted! Admin will verify shortly.');
+      payload.append("applicationId", applicationId);
+      payload.append("email", email);
+      payload.append("utrNumber", form.utrNumber);
+      payload.append("screenshot", form.screenshot);
+      await api.post("/payments/submit", payload);
+      toast.success(
+        "Payment submitted! The Campus Code Labs team will verify your payment and generate the offer letter.",
+      );
       fetchApplication(email);
-      setForm({ utrNumber: '', screenshot: null });
+      setForm({ utrNumber: "", screenshot: null });
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Payment submission failed');
+      toast.error(err.response?.data?.message || "Payment submission failed");
     } finally {
       setSubmitting(false);
     }
@@ -77,17 +81,32 @@ const ApplyPayment = () => {
     return (
       <div className="py-12 min-h-[80vh]">
         <div className="max-w-md mx-auto px-4">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center mb-8"
+          >
             <h1 className="section-title">Complete Payment</h1>
-            <p className="section-subtitle mx-auto mt-4">Enter your email to continue with payment</p>
+            <p className="section-subtitle mx-auto mt-4">
+              Enter your email to continue with payment
+            </p>
           </motion.div>
-          <form onSubmit={handleEmailVerify} className="glass-card p-8 space-y-4">
+          <form
+            onSubmit={handleEmailVerify}
+            className="glass-card p-8 space-y-4"
+          >
             <div>
               <label className="text-sm font-medium">Application ID</label>
-              <input className="input-field mt-1 bg-slate-50" value={applicationId} readOnly />
+              <input
+                className="input-field mt-1 bg-slate-50"
+                value={applicationId}
+                readOnly
+              />
             </div>
             <div>
-              <label className="text-sm font-medium">Email used in application</label>
+              <label className="text-sm font-medium">
+                Email used in application
+              </label>
               <input
                 type="email"
                 required
@@ -96,8 +115,12 @@ const ApplyPayment = () => {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
-            <button type="submit" disabled={loading} className="btn-primary w-full">
-              {loading ? 'Verifying...' : 'Continue'}
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary w-full"
+            >
+              {loading ? "Verifying..." : "Continue"}
             </button>
           </form>
         </div>
@@ -107,14 +130,21 @@ const ApplyPayment = () => {
 
   if (loading) return <LoadingSpinner fullScreen />;
 
-  const isSubmitted = ['payment_submitted', 'approved'].includes(application?.status);
-  const isApproved = application?.status === 'approved';
-  const paymentAmount = application?.payment?.amount || getInternshipPrice(application?.duration);
+  const isSubmitted = ["payment_submitted", "approved"].includes(
+    application?.status,
+  );
+  const isApproved = application?.status === "approved";
+  const paymentAmount =
+    application?.payment?.amount || getInternshipPrice(application?.duration);
 
   return (
     <div className="py-12 min-h-[80vh]">
       <div className="max-w-2xl mx-auto px-4">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-8"
+        >
           <h1 className="section-title">Complete Payment</h1>
           <p className="text-slate-600 mt-2">{application?.course?.title}</p>
           {paymentAmount > 0 && (
@@ -127,31 +157,56 @@ const ApplyPayment = () => {
         {isApproved ? (
           <div className="glass-card p-8 text-center">
             <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-            <h2 className="font-display text-xl font-bold text-green-600 mb-2">Application Approved!</h2>
-            <p className="text-slate-600 mb-2">Your offer letter and internship certificate have been sent to <strong>{email}</strong>.</p>
-            <p className="text-sm text-slate-500">Scan the QR code on your certificate to verify it anytime.</p>
+            <h2 className="font-display text-xl font-bold text-green-600 mb-2">
+              Application Approved!
+            </h2>
+            <p className="text-slate-600 mb-2">
+              Your offer letter and internship certificate have been sent to{" "}
+              <strong>{email}</strong>.
+            </p>
+            <p className="text-sm text-slate-500">
+              Scan the QR code on your certificate to verify it anytime.
+            </p>
+            <p className="text-sm text-slate-500 mt-2">
+              Please check your spam folder too, as emails may sometimes arrive
+              there.
+            </p>
           </div>
         ) : isSubmitted ? (
           <div className="glass-card p-8 text-center">
             <CheckCircle className="w-16 h-16 text-amber-500 mx-auto mb-4" />
-            <h2 className="font-display text-xl font-bold mb-2">Payment Submitted</h2>
-            <p className="text-slate-600">Your payment is under verification. You will receive an email once approved.</p>
+            <h2 className="font-display text-xl font-bold mb-2">
+              Payment Submitted
+            </h2>
+            <p className="text-slate-600">
+              The Campus Code Labs team will verify your payment and generate
+              the offer letter.
+            </p>
+            <p className="text-sm text-slate-500 mt-2">
+              Please check your mail, including the spam folder, as emails may
+              sometimes arrive there.
+            </p>
             {application?.payment?.utrNumber && (
-              <p className="text-sm text-slate-500 mt-4">UTR: {application.payment.utrNumber}</p>
+              <p className="text-sm text-slate-500 mt-4">
+                UTR: {application.payment.utrNumber}
+              </p>
             )}
           </div>
         ) : (
           <>
             <div className="glass-card overflow-hidden mb-6">
               <div className="bg-slate-200 dark:bg-brand-800 px-6 py-4">
-                <h2 className="font-display text-lg font-bold">Payment Details</h2>
+                <h2 className="font-display text-lg font-bold">
+                  Payment Details
+                </h2>
               </div>
               <div className="p-8 space-y-5 text-slate-700 dark:text-slate-300">
                 <h3 className="font-bold text-lg text-slate-900 dark:text-white">
-                  Slash Mark Virtual Training + Project-Based Internship Program
+                  Virtual Training + Project-Based Internship Program
                 </h3>
                 <p>
-                  The training and project-based internship are <strong>completely free of cost.</strong>
+                  The training and project-based internship are{" "}
+                  <strong>completely free of cost.</strong>
                   <br />
                   <em>(Certification charges are applicable)</em>
                 </p>
@@ -161,8 +216,9 @@ const ApplyPayment = () => {
                   <li>No Training Fee</li>
                 </ul>
                 <p>
-                  <strong>Note:</strong> Certification charges are mandatory for receiving the official certificate after
-                  successful completion of the program.
+                  <strong>Note:</strong> Certification charges are mandatory for
+                  receiving the official certificate after successful completion
+                  of the program.
                 </p>
               </div>
             </div>
@@ -170,7 +226,9 @@ const ApplyPayment = () => {
             <div className="glass-card p-8 mb-6 text-center">
               <h3 className="font-semibold mb-4">Pay via UPI</h3>
               {paymentAmount > 0 && (
-                <p className="text-2xl font-bold text-brand-700 mb-4">Rs. {paymentAmount}</p>
+                <p className="text-2xl font-bold text-brand-700 mb-4">
+                  Rs. {paymentAmount}
+                </p>
               )}
               {settings?.hasQrCode && (
                 <img
@@ -185,34 +243,48 @@ const ApplyPayment = () => {
                 </p>
               )}
               {!settings?.upiId && !settings?.hasQrCode && (
-                <p className="text-slate-500">Payment details will be shared via email.</p>
+                <p className="text-slate-500">
+                  Payment details will be shared via email.
+                </p>
               )}
             </div>
 
             <form onSubmit={handleSubmit} className="glass-card p-8 space-y-4">
               <div>
-                <label className="text-sm font-medium">UTR / Transaction Number</label>
+                <label className="text-sm font-medium">
+                  UTR / Transaction Number
+                </label>
                 <input
                   required
                   className="input-field mt-1"
                   placeholder="Enter UTR number"
                   value={form.utrNumber}
-                  onChange={(e) => setForm({ ...form, utrNumber: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, utrNumber: e.target.value })
+                  }
                 />
               </div>
               <div>
-                <label className="text-sm font-medium">Payment Screenshot</label>
+                <label className="text-sm font-medium">
+                  Payment Screenshot
+                </label>
                 <input
                   type="file"
                   accept="image/*"
                   required
                   className="input-field mt-1"
-                  onChange={(e) => setForm({ ...form, screenshot: e.target.files[0] })}
+                  onChange={(e) =>
+                    setForm({ ...form, screenshot: e.target.files[0] })
+                  }
                 />
               </div>
-              <button type="submit" disabled={submitting} className="btn-primary w-full py-3">
+              <button
+                type="submit"
+                disabled={submitting}
+                className="btn-primary w-full py-3"
+              >
                 <Upload className="w-4 h-4" />
-                {submitting ? 'Submitting...' : 'Submit Payment'}
+                {submitting ? "Submitting..." : "Submit Payment"}
               </button>
             </form>
           </>
