@@ -39,6 +39,33 @@ const terms = [
 
 const projectTitlesByDomain = [
   {
+    keywords: ['embedded', 'microcontroller', 'embedded c', 'arduino', 'rtos'],
+    projects: [
+      'Smart Home Automation Using Microcontroller',
+      'Temperature and Humidity Monitoring System',
+      'RFID-Based Attendance System',
+      'Obstacle Detection Robot Using Sensors',
+    ],
+  },
+  {
+    keywords: ['vlsi', 'verilog', 'vhdl', 'digital design', 'fpga'],
+    projects: [
+      'Verilog-Based ALU Design and Simulation',
+      'UART Protocol Design Using HDL',
+      'Traffic Light Controller Using FPGA',
+      'Digital Clock Design and Verification',
+    ],
+  },
+  {
+    keywords: ['iot', 'smart systems', 'esp32', 'mqtt', 'cloud dashboard'],
+    projects: [
+      'IoT-Based Smart Energy Meter',
+      'Smart Agriculture Monitoring System',
+      'ESP32 Home Automation Dashboard',
+      'IoT Air Quality Monitoring System',
+    ],
+  },
+  {
     keywords: ['mern', 'full stack', 'web', 'react', 'node', 'javascript'],
     projects: [
       'MERN Stack Internship Management Portal',

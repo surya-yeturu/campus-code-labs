@@ -15,21 +15,16 @@ const getAdminSeedData = () => ({
 export const startupSeed = async () => {
   console.log('Checking seed data...');
 
-  const courseCount = await Course.estimatedDocumentCount();
-  if (courseCount > 0) {
-    console.log('Courses already exist, skipping');
-  } else {
-    console.log('Seeding courses...');
-    await Promise.all(
-      defaultCourses.map((course) =>
-        Course.findOneAndUpdate(
-          { slug: course.slug },
-          { $setOnInsert: course },
-          { upsert: true, new: true, setDefaultsOnInsert: true }
-        )
+  console.log('Seeding missing default courses...');
+  await Promise.all(
+    defaultCourses.map((course) =>
+      Course.findOneAndUpdate(
+        { slug: course.slug },
+        { $setOnInsert: course },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
       )
-    );
-  }
+    )
+  );
 
   const adminSeed = getAdminSeedData();
   const adminExists = await User.exists({
