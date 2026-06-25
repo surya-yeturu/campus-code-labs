@@ -78,32 +78,18 @@ const Footer = () => (
             </li>
           </ul>
 
-          {/* <div className="mt-6">
+          <div className="mt-6">
             <h4 className="font-semibold text-white mb-3">Follow</h4>
             <div className="flex items-center gap-3">
               <a
-                aria-label="Twitter"
-                href="#"
-                className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
-              >
-                <Twitter className="w-4 h-4 text-brand-400" />
-              </a>
-              <a
                 aria-label="LinkedIn"
-                href="#"
+                href="https://www.linkedin.com/company/campus-code-labs/"
                 className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
               >
                 <Linkedin className="w-4 h-4 text-brand-400" />
               </a>
-              <a
-                aria-label="GitHub"
-                href="#"
-                className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
-              >
-                <Github className="w-4 h-4 text-brand-400" />
-              </a> */}
-            {/* </div> */}
-          {/* </div> */}
+            </div>
+          </div>
         </div>
       </div>
       <div className="border-t border-slate-800 mt-12 pt-8 text-center text-sm text-slate-500">
