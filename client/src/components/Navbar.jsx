@@ -8,6 +8,7 @@ import LogoMark from './LogoMark';
 const navLinks = [
   { to: '/', label: 'Home' },
   { to: '/internships', label: 'Internships' },
+  { to: '/salesforce', label: 'Salesforce' },
   { to: '/services', label: 'Services' },
   { to: '/about', label: 'About' },
   { to: '/verify', label: 'Verify Certificate' },

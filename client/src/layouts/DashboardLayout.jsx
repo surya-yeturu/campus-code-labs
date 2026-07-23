@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Outlet, NavLink, Link } from 'react-router-dom';
 import {
   LayoutDashboard, Briefcase, CreditCard, FileText, Award, ClipboardCheck,
-  Settings, Menu, LogOut, Sun, Moon, ClipboardList, BookOpen, FolderKanban, Files,
+  Settings, Menu, LogOut, Sun, Moon, ClipboardList, BookOpen, FolderKanban, Files, Cloud,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -22,6 +22,7 @@ const studentLinks = [
 const adminLinks = [
   { to: '/admin', icon: LayoutDashboard, label: 'Overview', end: true },
   { to: '/admin/applications', icon: ClipboardList, label: 'Applications' },
+  { to: '/admin/salesforce', icon: Cloud, label: 'Salesforce Candidates' },
   { to: '/admin/students', icon: Briefcase, label: 'Students' },
   { to: '/admin/payments', icon: CreditCard, label: 'Payments' },
   { to: '/admin/notes', icon: BookOpen, label: 'Notes' },

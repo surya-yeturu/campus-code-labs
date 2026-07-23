@@ -27,6 +27,8 @@ import AdminRecommendations from './pages/admin/AdminRecommendations';
 import AdminNotes from './pages/admin/AdminNotes';
 import AdminProjects from './pages/admin/AdminProjects';
 import AdminAnalytics from './pages/admin/AdminAnalytics';
+import Salesforce from './pages/Salesforce';
+import AdminSalesforceCandidates from './pages/admin/AdminSalesforceCandidates';
 
 const AuthRedirect = ({ children }) => {
   const { user, loading } = useAuth();
@@ -49,6 +51,7 @@ function App() {
         <Route path="/courses" element={<Navigate to="/internships" replace />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/salesforce" element={<Salesforce />} />
         <Route path="/verify" element={<Verify />} />
         <Route path="/verify/:certificateId" element={<Verify />} />
         <Route path="/login" element={<AuthRedirect><Login /></AuthRedirect>} />
@@ -63,6 +66,7 @@ function App() {
         <Route path="certificates" element={<AdminCertificates />} />
         <Route path="courses" element={<AdminCourses />} />
         <Route path="applications" element={<AdminApplications />} />
+        <Route path="salesforce" element={<AdminSalesforceCandidates />} />
         <Route path="settings/payment" element={<PaymentSettings />} />
         <Route path="notes" element={<AdminNotes />} />
         <Route path="projects" element={<AdminProjects />} />
