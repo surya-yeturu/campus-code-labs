@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: learnovate-api
+    name: campus-code-labs-api
     env: node
     buildCommand: npm install
     startCommand: npm start

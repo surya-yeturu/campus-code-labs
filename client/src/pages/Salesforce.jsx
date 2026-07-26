@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowRight, Cloud, Code, DollarSign, Globe, Briefcase, Building2,
   Award, Users, BookOpen, Headphones, FileText, Target, MessageSquare,
-  ChevronDown, Send, CheckCircle, Laptop, Zap, Shield, TrendingUp,
+  ChevronDown, Send, CheckCircle, Laptop, Shield, TrendingUp,
   GraduationCap, ClipboardList, GitBranch, Layers, Database, Workflow,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -34,23 +34,192 @@ const whyCampusCode = [
 ];
 
 const curriculumModules = [
-  { title: 'Module 1', topic: 'Salesforce Admin Configuration' },
-  { title: 'Module 2', topic: 'Salesforce Technical Concepts' },
-  { title: 'Module 3', topic: 'Salesforce Lightning' },
-];
-
-const projectFeatures = [
-  'Requirements Gathering', 'Objects', 'Automation', 'Approval Processes',
-  'Apex', 'LWC', 'Reports', 'Dashboards', 'Deployment', 'Git', 'Agile',
+  {
+    title: 'Module 1',
+    topic: 'Salesforce Admin Configuration',
+    sections: [
+      {
+        name: 'Salesforce Administration',
+        topics: [
+          'Introduction to Cloud Computing',
+          'Types of Cloud',
+          'Introduction of Salesforce Products',
+          'Force.com Instances',
+          'Communities',
+          'Company Profile',
+          {
+            name: 'Manage User',
+            subtopics: ['Roles', 'Profiles', 'User Creation', 'Permission Set', 'Groups', 'Queue', 'Login Issues and Solutions'],
+          },
+          {
+            name: 'Applications',
+            subtopics: ['Standard Applications', 'Custom Applications'],
+          },
+          'Objects & Tabs',
+          'Fields & Relation',
+          'Layout Management',
+          {
+            name: 'Record Level Security Model',
+            subtopics: ['Organization-Wide Defaults', 'Role Hierarchies', 'External Sharing Model', 'Sharing Rules', 'Manual Sharing Rule', 'Profile and OWD Combination'],
+          },
+          'Object Level Security Model',
+          'Field Level Security Model',
+          'Workflows',
+          'Approval Process',
+          'Process Builder',
+          'Flows',
+          'Managing Data – Using Wizards',
+          'Reports',
+          'Security Setting Login History',
+          'Mobile Administration',
+          'Email Administration',
+          'CRM Concepts',
+          'Single Sign On',
+          'Authentication Provider',
+        ],
+      },
+    ],
+  },
+  {
+    title: 'Module 2',
+    topic: 'Salesforce Technical Concepts',
+    sections: [
+      {
+        name: 'Salesforce Development',
+        topics: [
+          'Enable Developing Mode',
+          'Overview about Developer Console',
+          'Installing Eclipse',
+          'Overview about using Eclipse and options',
+          'MVC Architecture',
+          'OOPS (Object-oriented programming)',
+          'OOPS Basics',
+          'Static Keyword',
+          'Final Keyword',
+          'Try-Catch',
+        ],
+      },
+      {
+        name: 'Apex',
+        topics: [
+          'Wrapper Class',
+          'Collections',
+          'SOQL & SOSL',
+          'DML Operations',
+          'Batch Apex',
+          'Queueable Apex',
+          'Future Apex',
+          'Schedule Apex',
+          'Email Services',
+          'Triggers',
+          'Schema Programming',
+          'Extensions',
+          'Custom Setting & Custom Metadata Types',
+          'Apex based Sharing',
+          'Apex based Approval Process',
+          'Working with Community users with Apex',
+          'Flows & Plug-ins',
+          'Test Classes',
+        ],
+      },
+      {
+        name: 'Visual Force',
+        topics: [
+          'Create VF Page',
+          'Fetching data from Different Sources',
+          'Page Block',
+          'Input Components',
+          'Output Components',
+          'List Views',
+          'CSS in VF Page',
+          'JavaScript in VF Page',
+          'Visual Force Templates',
+          'Action Components',
+          'Remote Method Invocations',
+          'Generate the VF Page Content As',
+        ],
+      },
+      {
+        name: 'Web Services & Integration',
+        topics: [
+          'Introduction of Integration',
+          'JSON',
+          'XML Classes in Salesforce',
+          'HTTP Callouts',
+          'REST API',
+          'Authorization',
+          'Code Based Authorization',
+          'SOAP API',
+          'Platform Events',
+          'Change Data Captures',
+          'External Objects',
+          'External Data Source',
+          'Salesforce to Salesforce',
+          'RESTful Web Services',
+          'Metadata API',
+          'Apex Callouts',
+        ],
+      },
+    ],
+  },
+  {
+    title: 'Module 3',
+    topic: 'Salesforce Lightning',
+    sections: [
+      {
+        name: 'Lightning',
+        topics: [
+          'Classic v/s Lightning',
+          'Lightning View',
+          'Lightning App Builder',
+        ],
+      },
+      {
+        name: 'Lightning Aura Components',
+        topics: [
+          'What is Aura?',
+          'JavaScript',
+          'Lightning Bundle',
+          'Lightning Data Services (LDS)',
+          'Parent Component to Child Component Communication',
+          'Child Component to Parent Component Communication',
+          'Events (Component Event and Application Event)',
+          'Events Propagation (Bubble and Capture Phases)',
+          'Interfaces',
+          'Pub Sub',
+        ],
+      },
+      {
+        name: 'Lightning Web Components',
+        topics: [
+          'VS Code Installation',
+          'Salesforce CLI Installation',
+          'Setup Visual Studio Code',
+          'Scratch Orgs and Sandboxes',
+          'Lightning Web Components Bundle',
+          'HTML (Template) Tags & Lightning Tags',
+          'React JavaScript',
+          'Data Binding',
+          'Lightning Data Services',
+          'Events and Communication',
+          'Parent to Child Communication',
+          'Child to Parent Communication',
+          'Pub Sub',
+          'Lightning Message Services',
+          'Life Cycle Hooks',
+          'Decorators (API, Track & Wire)',
+        ],
+      },
+    ],
+  },
 ];
 
 const careerRoles = [
-  { icon: Code, title: 'Salesforce Developer', desc: 'Build custom apps, Apex, LWC, and integrations.' },
   { icon: Shield, title: 'Salesforce Administrator', desc: 'Configure orgs, users, security, and workflows.' },
-  { icon: Layers, title: 'CRM Consultant', desc: 'Design CRM solutions for business needs.' },
+  { icon: Code, title: 'Salesforce Developer', desc: 'Build custom apps, Apex, LWC, and integrations.' },
+  { icon: Building2, title: 'Solution Architect', desc: 'Architect scalable, end-to-end Salesforce solutions.' },
+  { icon: Layers, title: 'Technical Architect', desc: 'Design and oversee enterprise Salesforce architecture.' },
   { icon: Database, title: 'Business Analyst', desc: 'Bridge business requirements and technical solutions.' },
-  { icon: Workflow, title: 'Technical Consultant', desc: 'Implement complex Salesforce implementations.' },
-  { icon: Zap, title: 'Solution Engineer', desc: 'Architect scalable Salesforce solutions.' },
 ];
 
 const faqs = [
@@ -67,6 +236,78 @@ const faqs = [
 ];
 
 const floatingIcons = [Cloud, Code, Database, Workflow, Layers, GitBranch];
+
+const CurriculumTopic = ({ topic }) => {
+  if (typeof topic === 'string') {
+    return (
+      <li className="flex items-start gap-2">
+        <CheckCircle className="w-4 h-4 text-brand-500 shrink-0 mt-0.5" />
+        <span>{topic}</span>
+      </li>
+    );
+  }
+
+  return (
+    <li>
+      <div className="flex items-start gap-2 font-medium text-brand-800 dark:text-brand-200">
+        <CheckCircle className="w-4 h-4 text-brand-500 shrink-0 mt-0.5" />
+        <span>{topic.name}</span>
+      </div>
+      <ul className="mt-2 ml-6 space-y-1.5 text-sm">
+        {topic.subtopics.map((sub) => (
+          <li key={sub} className="flex items-start gap-2">
+            <span className="text-brand-400 mt-1.5">•</span>
+            <span>{sub}</span>
+          </li>
+        ))}
+      </ul>
+    </li>
+  );
+};
+
+const CurriculumAccordion = ({ modules }) => {
+  const [openIdx, setOpenIdx] = useState(0);
+
+  return (
+    <div className="space-y-3">
+      {modules.map((module, i) => (
+        <div key={module.title} className="glass-card overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setOpenIdx(openIdx === i ? -1 : i)}
+            className="w-full flex items-center justify-between p-5 text-left font-medium text-brand-900 dark:text-white hover:bg-brand-50/50 dark:hover:bg-brand-800/30 transition-colors"
+          >
+            <span>{`${module.title}: ${module.topic}`}</span>
+            <ChevronDown className={`w-5 h-5 shrink-0 transition-transform ${openIdx === i ? 'rotate-180' : ''}`} />
+          </button>
+          <AnimatePresence>
+            {openIdx === i && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="px-5 pb-5 space-y-6 text-slate-600 dark:text-slate-400">
+                  {module.sections.map((section) => (
+                    <div key={section.name}>
+                      <h4 className="font-semibold text-brand-800 dark:text-brand-200 mb-3">{section.name}</h4>
+                      <ul className="space-y-2.5">
+                        {section.topics.map((topic) => (
+                          <CurriculumTopic key={typeof topic === 'string' ? topic : topic.name} topic={topic} />
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      ))}
+    </div>
+  );
+};
 
 const Accordion = ({ items }) => {
   const [openIdx, setOpenIdx] = useState(0);
@@ -371,12 +612,12 @@ const Salesforce = () => {
 
       {/* Curriculum */}
       <section id="curriculum" className="py-20 bg-white dark:bg-brand-900">
-        <div className="max-w-3xl mx-auto px-4">
+        <div className="max-w-4xl mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="section-title">Course Curriculum</h2>
             <p className="section-subtitle mx-auto mt-4">Three focused modules covering admin, technical, and Lightning skills</p>
           </div>
-          <Accordion items={curriculumModules} />
+          <CurriculumAccordion modules={curriculumModules} />
         </div>
       </section>
 
@@ -387,17 +628,10 @@ const Salesforce = () => {
             <div className="grid lg:grid-cols-2 gap-10 items-center">
               <div>
                 <h2 className="section-title mb-4">Real-Time Project</h2>
-                <p className="text-slate-600 dark:text-slate-400 mb-6">
+                <p className="text-slate-600 dark:text-slate-400">
                   Work on an enterprise-level Salesforce CRM project that mirrors real industry implementations.
                   Gain hands-on experience across the full Salesforce development lifecycle.
                 </p>
-                <div className="flex flex-wrap gap-3">
-                  {projectFeatures.map((f) => (
-                    <span key={f} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-brand-100 dark:bg-brand-800 text-brand-700 dark:text-brand-300 text-sm">
-                      <CheckCircle className="w-3.5 h-3.5" /> {f}
-                    </span>
-                  ))}
-                </div>
               </div>
               <div className="relative">
                 <div className="aspect-video rounded-2xl bg-gradient-to-br from-brand-600/20 to-brand-800/40 flex items-center justify-center border border-brand-500/20">

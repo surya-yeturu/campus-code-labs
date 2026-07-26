@@ -42,7 +42,7 @@ const Navbar = () => {
                   `px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                     isActive
                       ? 'text-brand-600 bg-brand-50 dark:bg-brand-800/50 shadow-[0_0_18px_rgba(10,132,255,0.20)]'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-white dark:hover:text-brand-400 hover:bg-white/5 dark:hover:bg-brand-800/30 hover:shadow-[0_0_18px_rgba(10,132,255,0.25)]'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-brand-50 dark:hover:bg-brand-800/30 hover:shadow-[0_0_18px_rgba(10,132,255,0.15)] dark:hover:shadow-[0_0_18px_rgba(10,132,255,0.25)]'
                   }`
                 }
               >

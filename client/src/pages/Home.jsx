@@ -124,9 +124,9 @@ const Home = () => {
       <section className="py-16 bg-white dark:bg-brand-900 border-y border-slate-200 dark:border-slate-800">
         <div className="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
           {[
-            { end: 5000, suffix: '+', label: 'Students Enrolled' },
+            { end: 500, suffix: '+', label: 'Students Enrolled' },
             { end: 8, suffix: '+', label: 'Internship Programs' },
-            { end: 4500, suffix: '+', label: 'Certificates Issued' },
+            { end: 300, suffix: '+', label: 'Certificates Issued' },
             { end: 98, suffix: '%', label: 'Satisfaction Rate' },
           ].map((stat) => (
             <div key={stat.label}>
