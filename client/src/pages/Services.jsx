@@ -20,6 +20,7 @@ const services = [
     icon: GraduationCap,
     title: 'Final Year Projects',
     desc: 'Mentor-guided final year projects with production-ready deliverables.',
+    link: '/final-year-projects',
   },
   {
     icon: Brain,
@@ -49,20 +50,34 @@ const Services = () => (
       </motion.div>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {services.map((s, i) => (
-          <motion.div
-            key={s.title}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: i * 0.1 }}
-            className="glass-card p-8 text-center"
-          >
-            <s.icon className="w-12 h-12 text-brand-600 mx-auto mb-4" />
-            <h3 className="font-display font-bold text-xl mb-2">{s.title}</h3>
-            <p className="text-slate-600 dark:text-slate-400 text-sm">{s.desc}</p>
-          </motion.div>
-        ))}
+        {services.map((s, i) => {
+          const card = (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+              className={`glass-card p-8 text-center ${s.link ? 'hover:shadow-premium transition-shadow' : ''}`}
+            >
+              <s.icon className="w-12 h-12 text-brand-600 mx-auto mb-4" />
+              <h3 className="font-display font-bold text-xl mb-2">{s.title}</h3>
+              <p className="text-slate-600 dark:text-slate-400 text-sm">{s.desc}</p>
+              {s.link && (
+                <span className="inline-flex items-center gap-1 mt-4 text-sm font-medium text-brand-600">
+                  Learn more <ArrowRight className="w-4 h-4" />
+                </span>
+              )}
+            </motion.div>
+          );
+
+          return s.link ? (
+            <Link key={s.title} to={s.link} className="block">
+              {card}
+            </Link>
+          ) : (
+            <div key={s.title}>{card}</div>
+          );
+        })}
       </div>
 
       <motion.div

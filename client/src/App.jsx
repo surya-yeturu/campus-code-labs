@@ -28,6 +28,7 @@ import AdminNotes from './pages/admin/AdminNotes';
 import AdminProjects from './pages/admin/AdminProjects';
 import AdminAnalytics from './pages/admin/AdminAnalytics';
 import Salesforce from './pages/Salesforce';
+import FinalYearProjects from './pages/FinalYearProjects';
 import AdminSalesforceCandidates from './pages/admin/AdminSalesforceCandidates';
 
 const AuthRedirect = ({ children }) => {
@@ -52,6 +53,7 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/salesforce" element={<Salesforce />} />
+        <Route path="/final-year-projects" element={<FinalYearProjects />} />
         <Route path="/verify" element={<Verify />} />
         <Route path="/verify/:certificateId" element={<Verify />} />
         <Route path="/login" element={<AuthRedirect><Login /></AuthRedirect>} />
