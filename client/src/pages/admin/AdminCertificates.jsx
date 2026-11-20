@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { ExternalLink, Upload } from 'lucide-react';
+import { ExternalLink, FileText, Upload } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import { resolveFileUrl } from '../../utils/fileUrl';
 
 const AdminCertificates = () => {
   const [certs, setCerts] = useState({ data: [] });
@@ -94,9 +95,16 @@ const AdminCertificates = () => {
                 <td className="p-4">{c.studentName || c.user?.fullName}</td>
                 <td className="p-4 hidden sm:table-cell">{c.courseName}</td>
                 <td className="p-4">
-                  <Link to={`/verify/${c.certificateId}`} className="text-brand-600 flex items-center gap-1">
-                    <ExternalLink className="w-4 h-4" /> Verify
-                  </Link>
+                  <div className="flex flex-wrap gap-3">
+                    {c.certificateUrl && (
+                      <a href={resolveFileUrl(c.certificateUrl)} target="_blank" rel="noreferrer" className="text-brand-600 flex items-center gap-1">
+                        <FileText className="w-4 h-4" /> View PDF
+                      </a>
+                    )}
+                    <Link to={`/verify/${c.certificateId}`} className="text-brand-600 flex items-center gap-1">
+                      <ExternalLink className="w-4 h-4" /> Verify
+                    </Link>
+                  </div>
                 </td>
               </tr>
             ))}

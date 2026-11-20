@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { CheckCircle, XCircle, Eye } from 'lucide-react';
 import api from '../../services/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import { resolveFileUrl } from '../../utils/fileUrl';
 
 const statusColors = {
   pending: 'bg-amber-100 text-amber-700',
@@ -109,7 +110,7 @@ const AdminApplications = () => {
                       <div>
                         <p className="text-xs">UTR: {app.payment.utrNumber || '-'}</p>
                         {app.payment.screenshotUrl && (
-                          <a href={app.payment.screenshotUrl} target="_blank" rel="noreferrer" className="text-brand-600 text-xs flex items-center gap-1 mt-1">
+                          <a href={resolveFileUrl(app.payment.screenshotUrl)} target="_blank" rel="noreferrer" className="text-brand-600 text-xs flex items-center gap-1 mt-1">
                             <Eye className="w-3 h-3" /> View Screenshot
                           </a>
                         )}

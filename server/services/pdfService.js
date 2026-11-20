@@ -81,6 +81,7 @@ const certificateSignaturePlacement = {
 
 export const generateOfferLetterPDF = async (data) => {
   const { studentName, collegeName, year, branch, courseName, duration, startDate, endDate, internshipId } = data;
+  const offerDate = startDate ? new Date(startDate) : new Date();
 
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({ size: 'A4', margin: 50 });
@@ -100,8 +101,8 @@ export const generateOfferLetterPDF = async (data) => {
     const orgRef = `CORPORATE${crypto.createHash('sha1').update(String(internshipId)).digest('hex').slice(0, 18).toUpperCase()}`;
 
     doc.fillColor('#111827').fontSize(10).font('Helvetica')
-      .text(`Date: ${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}`, 400, 112, { align: 'right' });
-    doc.text(`Ref No: OL/${new Date().getFullYear()}/${internshipId}`, 360, 128, { align: 'right' });
+      .text(`Date: ${offerDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}`, 400, 112, { align: 'right' });
+    doc.text(`Ref No: OL/${offerDate.getFullYear()}/${internshipId}`, 360, 128, { align: 'right' });
 
     // Partner logos at bottom-most
     // (keep them clean — no boxes / borders)

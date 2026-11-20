@@ -13,6 +13,7 @@ const fallbackProjects = [
   'Smart Certificate Verification System',
   'Campus Event Registration Portal',
 ];
+const CUSTOM_PROJECT_OPTION = '__custom_project__';
 
 const terms = [
   {
@@ -177,6 +178,7 @@ const Apply = () => {
     internshipToDate: '',
     internshipSlug: slug || '',
     projectTitle: '',
+    customProjectTitle: '',
     termsAccepted: false,
   });
 
@@ -193,6 +195,7 @@ const Apply = () => {
             duration,
             internshipSlug: slug,
             projectTitle: '',
+            customProjectTitle: '',
             internshipToDate: calcEndDate(f.internshipFromDate, duration),
           }));
         }
@@ -217,6 +220,10 @@ const Apply = () => {
       toast.error('End date could not be calculated. Check duration and start date.');
       return;
     }
+    if (form.projectTitle === CUSTOM_PROJECT_OPTION && !form.customProjectTitle.trim()) {
+      toast.error('Please enter your project name');
+      return;
+    }
     if (!form.termsAccepted) {
       toast.error('Please accept the terms and conditions');
       return;
@@ -233,7 +240,9 @@ const Apply = () => {
         duration: form.duration,
         internshipFromDate: form.internshipFromDate,
         internshipToDate: form.internshipToDate,
-        projectTitle: form.projectTitle,
+        projectTitle: form.projectTitle === CUSTOM_PROJECT_OPTION
+          ? form.customProjectTitle.trim()
+          : form.projectTitle,
         courseId: selectedInternship._id,
       };
 
@@ -400,6 +409,7 @@ const Apply = () => {
                   internshipSlug: e.target.value,
                   duration,
                   projectTitle: '',
+                  customProjectTitle: '',
                   internshipToDate: calcEndDate(prev.internshipFromDate, duration),
                 }));
               }}
@@ -424,8 +434,25 @@ const Apply = () => {
               {projectOptions.map((title) => (
                 <option key={title} value={title}>{title}</option>
               ))}
+              <option value={CUSTOM_PROJECT_OPTION}>My project is not listed — enter my own</option>
             </select>
           </div>
+
+          {form.projectTitle === CUSTOM_PROJECT_OPTION && (
+            <div>
+              <label className="text-sm font-medium" htmlFor="customProjectTitle">Your Project Name</label>
+              <input
+                id="customProjectTitle"
+                type="text"
+                required
+                maxLength={160}
+                className="input-field mt-1"
+                placeholder="Enter your project name"
+                value={form.customProjectTitle}
+                onChange={(e) => setForm({ ...form, customProjectTitle: e.target.value })}
+              />
+            </div>
+          )}
 
           <button type="submit" disabled={submitting} className="btn-primary w-full py-3">
             {submitting ? 'Submitting...' : <><Send className="w-4 h-4" /> Submit Application</>}
