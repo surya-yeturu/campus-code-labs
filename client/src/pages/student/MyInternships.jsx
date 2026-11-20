@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Download } from 'lucide-react';
 import api from '../../services/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import { resolveFileUrl } from '../../utils/fileUrl';
 
 const MyInternships = () => {
   const [internships, setInternships] = useState([]);
@@ -44,7 +45,7 @@ const MyInternships = () => {
               </div>
               <div className="flex flex-wrap gap-3 mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
                 {int.offerLetterUrl && (
-                  <a href={int.offerLetterUrl} target="_blank" rel="noreferrer" className="btn-outline text-sm py-2">
+                  <a href={resolveFileUrl(int.offerLetterUrl)} target="_blank" rel="noreferrer" className="btn-outline text-sm py-2">
                     <Download className="w-4 h-4" /> Offer Letter
                   </a>
                 )}

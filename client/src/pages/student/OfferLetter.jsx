@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Download, FileText } from 'lucide-react';
 import api from '../../services/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import { resolveFileUrl } from '../../utils/fileUrl';
 
 const OfferLetter = () => {
   const [internships, setInternships] = useState([]);
@@ -31,7 +32,7 @@ const OfferLetter = () => {
                 <p className="font-semibold">{int.course?.title}</p>
                 <p className="text-sm text-slate-500">{int.internshipId}</p>
               </div>
-              <a href={int.offerLetterUrl} target="_blank" rel="noreferrer" className="btn-primary text-sm">
+              <a href={resolveFileUrl(int.offerLetterUrl)} target="_blank" rel="noreferrer" className="btn-primary text-sm">
                 <Download className="w-4 h-4" /> Download
               </a>
             </div>

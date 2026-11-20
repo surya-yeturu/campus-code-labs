@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { Award, Download } from 'lucide-react';
 import api from '../../services/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import { resolveFileUrl } from '../../utils/fileUrl';
 
 const Certificates = () => {
   const [certificates, setCertificates] = useState([]);
@@ -77,7 +78,7 @@ const Certificates = () => {
               <p className="text-sm text-slate-500">Issued: {new Date(cert.completionDate).toLocaleDateString()}</p>
               <div className="flex gap-2 mt-4">
                 {cert.certificateUrl && (
-                  <a href={cert.certificateUrl} target="_blank" rel="noreferrer" className="btn-primary text-sm py-2">
+                  <a href={resolveFileUrl(cert.certificateUrl)} target="_blank" rel="noreferrer" className="btn-primary text-sm py-2">
                     <Download className="w-4 h-4" /> Download
                   </a>
                 )}

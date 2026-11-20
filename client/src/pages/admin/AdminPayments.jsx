@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { CheckCircle, XCircle, Eye } from 'lucide-react';
 import api from '../../services/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import { resolveFileUrl } from '../../utils/fileUrl';
 
 const statusColors = {
   pending: 'bg-amber-100 text-amber-700',
@@ -18,13 +19,6 @@ const AdminPayments = () => {
   const [page, setPage] = useState(1);
   const [actionId, setActionId] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
-
-  const resolveScreenshotUrl = (url) => {
-    if (!url) return '';
-    if (/^https?:\/\//i.test(url)) return url;
-    const base = import.meta.env.VITE_API_URL?.replace(/\/api$/, '') || 'http://localhost:5000';
-    return `${base}${url.startsWith('/') ? url : `/${url}`}`;
-  };
 
   const fetchData = () => {
     setLoading(true);
@@ -92,7 +86,7 @@ const AdminPayments = () => {
                   {p.screenshotUrl && (
                     <button
                       type="button"
-                      onClick={() => setPreviewUrl(resolveScreenshotUrl(p.screenshotUrl))}
+                      onClick={() => setPreviewUrl(resolveFileUrl(p.screenshotUrl))}
                       className="text-brand-600 text-xs flex items-center gap-1 mt-1 hover:underline"
                     >
                       <Eye className="w-3 h-3" /> View Screenshot

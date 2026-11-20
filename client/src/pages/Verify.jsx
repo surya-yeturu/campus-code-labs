@@ -103,11 +103,6 @@ const Verify = () => {
                   {result.data.internshipId && <p><strong>Internship ID:</strong> {result.data.internshipId}</p>}
                   <p><strong>Status:</strong> <span className="text-green-600 font-semibold">{result.data.status}</span></p>
                 </div>
-                {result.data.certificateUrl && (
-                  <a href={result.data.certificateUrl} target="_blank" rel="noreferrer" className="btn-primary mt-6 inline-flex">
-                    View Certificate
-                  </a>
-                )}
               </>
             ) : (
               <>
