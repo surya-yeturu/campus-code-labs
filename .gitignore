@@ -13,7 +13,7 @@ build/
 # Vite
 .vite/
 
-# Local uploads (when not using Cloudinary/Supabase)
+# Legacy local uploads kept for backward-compatible links
 server/uploads/
 
 # Logs

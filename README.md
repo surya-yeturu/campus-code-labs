@@ -10,7 +10,8 @@ A MERN stack internship management and certification platform for students.
 - Manual UPI/bank payment with admin verification
 - Automatic offer letter PDF generation & email
 - Certificate PDF generation with embedded QR code
-- Google Drive storage for certificates (optional)
+- MongoDB GridFS storage for certificates, offer letters, payment screenshots, and uploaded files
+- Admin import for existing certificates with QR-based verification
 - Public certificate verification via QR scan or ID lookup
 - Admin dashboard for applications, payments, and certificates
 - Premium EdTech UI with dark mode
@@ -26,7 +27,7 @@ A MERN stack internship management and certification platform for students.
 | Payments | Manual UTR + screenshot verification |
 | Email | Nodemailer |
 | PDF | PDFKit |
-| Storage | Google Drive (certificates) / Supabase / local uploads |
+| Storage | MongoDB GridFS |
 
 ## Project Structure
 
@@ -43,7 +44,6 @@ campus-code-labs/
 
 - Node.js 18+
 - MongoDB Atlas account (or local MongoDB)
-- Google Cloud service account (optional — for certificate storage on Drive)
 - SMTP credentials (optional — emails log to console without SMTP)
 
 ### 1. Backend
@@ -79,7 +79,6 @@ npm run dev
 |----------|-------------|
 | MONGODB_URI | MongoDB connection string |
 | JWT_SECRET | Secret for JWT signing |
-| GOOGLE_DRIVE_* | Google Drive service account (certificates) |
 | SMTP_* | Email configuration |
 | EMAIL_FROM | Sender address for emails |
 | CLIENT_URL | Frontend URL for QR codes & emails |
@@ -91,8 +90,9 @@ npm run dev
 2. **Apply** → Fills form at `/apply/:slug` (name, college, dates, project, resume)
 3. **Pay manually** → UPI/bank transfer at `/apply/payment/:applicationId` with UTR + screenshot
 4. **Admin verifies** → Admin approves payment in dashboard
-5. **Auto-issued** → Offer letter + certificate PDF generated, emailed, stored on Drive
-6. **Verify** → QR on certificate links to `/verify/:certificateId?open=certificate`
+5. **Auto-issued** → Offer letter + certificate PDF generated, emailed, stored in MongoDB GridFS
+6. **Verify** → QR opens `/verify/:certificateId` and shows the certificate details
+7. **Restore older certificates** → Admin imports each PDF and enters its printed details at `/admin/certificates`
 
 ## Deployment
 
@@ -121,7 +121,7 @@ npm run dev
 2. Set a strong `JWT_SECRET` (32+ random characters)
 3. Set `CLIENT_URL` to your live frontend URL (comma-separate multiple origins if needed)
 4. Set `SERVER_URL` to your live API URL
-5. Configure MongoDB, SMTP, and Google Drive env vars
+5. Configure MongoDB and SMTP env vars
 6. Run `npm run seed` once on first deploy
 
 ### Frontend (Vercel / Netlify)

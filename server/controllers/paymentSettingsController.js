@@ -1,5 +1,4 @@
 import PaymentSettings from '../models/PaymentSettings.js';
-import fs from 'fs';
 
 const formatSettings = (settings) => ({
   _id: settings._id,
@@ -32,12 +31,8 @@ export const updatePaymentSettings = async (req, res) => {
   if (upiId !== undefined) update.upiId = upiId;
 
   if (req.file) {
-    const buffer = req.file.buffer || fs.readFileSync(req.file.path);
-    update.qrCodeData = buffer;
+    update.qrCodeData = req.file.buffer;
     update.qrCodeContentType = req.file.mimetype || 'image/png';
-    if (req.file.path && fs.existsSync(req.file.path)) {
-      fs.unlinkSync(req.file.path);
-    }
   }
 
   const settings = await PaymentSettings.findOneAndUpdate({}, update, { new: true, upsert: true });

@@ -63,7 +63,6 @@ export const issueCertificateForInternship = async (internship, applicant, { sen
   const certificateId = generateCertificateId();
   const certificateNo = generateCertificateNo();
   const verifyUrl = `${process.env.CLIENT_URL}/verify/${certificateId}`;
-  const certificateOpenUrl = `${verifyUrl}?open=certificate`;
   const issueDate = student.certificateDate ? new Date(student.certificateDate) : new Date();
 
   const pdfBuffer = await generateCertificatePDF({
@@ -81,7 +80,7 @@ export const issueCertificateForInternship = async (internship, applicant, { sen
     internshipFromDate: student.internshipFromDate || internship.startDate,
     internshipToDate: student.internshipToDate || internship.endDate,
     projectTitle: student.projectTitle || internship.projectTitle || '',
-    verifyUrl: certificateOpenUrl,
+    verifyUrl,
   });
 
   let certificateUrl = '';
@@ -91,7 +90,7 @@ export const issueCertificateForInternship = async (internship, applicant, { sen
     const certUpload = await uploadBuffer(pdfBuffer, 'certificates', `${certificateId}.pdf`, 'application/pdf');
     certificateUrl = certUpload.viewUrl || certUpload.url || certUpload.secure_url;
 
-    const qrBuffer = await QRCode.toBuffer(certificateOpenUrl, { width: 300 });
+    const qrBuffer = await QRCode.toBuffer(verifyUrl, { width: 300 });
     const qrUpload = await uploadBuffer(qrBuffer, 'certificates', `${certificateId}-qr.png`, 'image/png');
     qrCodeUrl = toAbsoluteUrl(qrUpload.url || qrUpload.viewUrl || qrUpload.secure_url);
   } catch (err) {
@@ -110,6 +109,7 @@ export const issueCertificateForInternship = async (internship, applicant, { sen
     internshipToDate: student.internshipToDate || internship.endDate,
     projectTitle: student.projectTitle || internship.projectTitle || '',
     certificateNo,
+    internshipId: internship.internshipId,
     user: internship.user || undefined,
     internship: internship._id,
     course: course._id,

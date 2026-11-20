@@ -1,26 +1,5 @@
 import multer from 'multer';
 import path from 'path';
-import { fileURLToPath } from 'url';
-import fs from 'fs';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const baseUploadDir = path.join(__dirname, '../uploads');
-
-const ensureDir = (dir) => {
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-};
-
-const createStorage = (subdir) => {
-  const dir = path.join(baseUploadDir, subdir);
-  ensureDir(dir);
-  return multer.diskStorage({
-    destination: (_req, _file, cb) => cb(null, dir),
-    filename: (_req, file, cb) => {
-      const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-      cb(null, `${unique}${path.extname(file.originalname)}`);
-    },
-  });
-};
 
 const docFilter = (_req, file, cb) => {
   const allowed = ['.pdf', '.doc', '.docx'];
@@ -37,7 +16,7 @@ const imageFilter = (_req, file, cb) => {
 };
 
 export const uploadResume = multer({
-  storage: createStorage('resumes'),
+  storage: multer.memoryStorage(),
   fileFilter: docFilter,
   limits: { fileSize: 5 * 1024 * 1024 },
 }).single('resume');
@@ -48,6 +27,15 @@ export const uploadPaymentScreenshot = multer({
   limits: { fileSize: 5 * 1024 * 1024 },
 }).single('screenshot');
 
+export const uploadCertificatePdf = multer({
+  storage: multer.memoryStorage(),
+  fileFilter: (_req, file, cb) => {
+    const isPdf = file.mimetype === 'application/pdf' && path.extname(file.originalname).toLowerCase() === '.pdf';
+    cb(isPdf ? null : new Error('Only PDF certificates are allowed'), isPdf);
+  },
+  limits: { fileSize: 20 * 1024 * 1024 },
+}).single('certificate');
+
 export const uploadQrCode = multer({
   storage: multer.memoryStorage(),
   fileFilter: imageFilter,
@@ -55,7 +43,7 @@ export const uploadQrCode = multer({
 }).single('qrCode');
 
 export const uploadNote = multer({
-  storage: createStorage('notes'),
+  storage: multer.memoryStorage(),
   fileFilter: docFilter,
   limits: { fileSize: 10 * 1024 * 1024 },
 }).single('file');

@@ -2,7 +2,6 @@ import Payment from '../models/Payment.js';
 import Application from '../models/Application.js';
 import { createPaymentForApplication, processApplicationApproval } from '../services/enrollmentService.js';
 import { uploadBuffer } from '../services/storageService.js';
-import fs from 'fs';
 
 export const submitManualPayment = async (req, res) => {
   const { applicationId, email, utrNumber } = req.body;
@@ -36,12 +35,8 @@ export const submitManualPayment = async (req, res) => {
   try {
     const ext = req.file.originalname?.match(/\.[a-z0-9]+$/i)?.[0] || '.jpg';
     const filename = `${applicationId}-${Date.now()}${ext}`;
-    const buffer = req.file.buffer || fs.readFileSync(req.file.path);
-    const upload = await uploadBuffer(buffer, 'payments', filename, req.file.mimetype || 'image/jpeg');
+    const upload = await uploadBuffer(req.file.buffer, 'payments', filename, req.file.mimetype || 'image/jpeg');
     screenshotUrl = upload.url || upload.viewUrl;
-    if (req.file.path && fs.existsSync(req.file.path)) {
-      fs.unlinkSync(req.file.path);
-    }
   } catch (err) {
     console.error('Payment screenshot upload failed:', err.message);
     return res.status(500).json({ success: false, message: 'Failed to upload payment screenshot' });

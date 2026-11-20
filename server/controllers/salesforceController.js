@@ -1,5 +1,6 @@
 import SalesforceCandidate from '../models/SalesforceCandidate.js';
 import { escapeRegex } from '../utils/escapeRegex.js';
+import { uploadBuffer } from '../services/storageService.js';
 
 const STATUS_VALUES = ['New', 'Contacted', 'Interested', 'Enrolled', 'Not Interested', 'Closed'];
 
@@ -72,7 +73,8 @@ export const submitApplication = async (req, res) => {
 
   let resumePath = '';
   if (req.file) {
-    resumePath = `/uploads/resumes/${req.file.filename}`;
+    const filename = `${Date.now()}-${req.file.originalname.replace(/[\\/]/g, '_')}`;
+    resumePath = (await uploadBuffer(req.file.buffer, 'resumes', filename, req.file.mimetype)).url;
   }
 
   const candidate = await SalesforceCandidate.create({

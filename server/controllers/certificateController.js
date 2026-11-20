@@ -2,6 +2,7 @@ import Certificate from '../models/Certificate.js';
 import Internship from '../models/Internship.js';
 import { escapeRegex } from '../utils/escapeRegex.js';
 import { issueCertificateForInternship } from '../services/certificateService.js';
+import { deleteStoredFile, uploadBuffer } from '../services/storageService.js';
 
 export const generateCertificate = async (req, res) => {
   const { internshipId } = req.body;
@@ -34,6 +35,7 @@ export const verifyCertificate = async (req, res) => {
     data: {
       certificateId: certificate.certificateId,
       certificateNo: certificate.certificateNo,
+      internshipId: certificate.internshipId,
       studentName: certificate.studentName,
       email: certificate.email,
       collegeName: certificate.collegeName,
@@ -50,6 +52,55 @@ export const verifyCertificate = async (req, res) => {
       status: certificate.isVerified ? 'Valid' : 'Invalid',
     },
   });
+};
+
+export const importCertificate = async (req, res) => {
+  const {
+    certificateId, certificateNo, studentName, email, collegeName, branch, year,
+    internshipId, internshipFromDate, internshipToDate, projectTitle, courseName,
+    duration, completionDate,
+  } = req.body;
+
+  if (!req.file) return res.status(400).json({ success: false, message: 'Certificate PDF is required' });
+  if (!certificateId?.trim() || !certificateNo?.trim() || !studentName?.trim() || !courseName?.trim() || !completionDate) {
+    return res.status(400).json({ success: false, message: 'Certificate ID, certificate number, student name, course, and certificate date are required' });
+  }
+  if (Number.isNaN(new Date(completionDate).getTime())) {
+    return res.status(400).json({ success: false, message: 'Certificate date is invalid' });
+  }
+
+  const normalizedId = certificateId.trim();
+  if (await Certificate.exists({ certificateId: normalizedId })) {
+    return res.status(409).json({ success: false, message: 'A certificate with this ID already exists' });
+  }
+
+  let storedFile;
+  try {
+    storedFile = await uploadBuffer(req.file.buffer, 'certificates', `${normalizedId}.pdf`, 'application/pdf');
+    const certificate = await Certificate.create({
+      certificateId: normalizedId,
+      certificateNo: certificateNo.trim(),
+      studentName: studentName.trim(),
+      email: email?.trim(),
+      collegeName: collegeName?.trim(),
+      branch: branch?.trim(),
+      year: year?.trim(),
+      internshipId: internshipId?.trim(),
+      internshipFromDate: internshipFromDate || undefined,
+      internshipToDate: internshipToDate || undefined,
+      projectTitle: projectTitle?.trim() || '',
+      courseName: courseName.trim(),
+      duration: duration?.trim() || '',
+      completionDate: new Date(completionDate),
+      certificateUrl: storedFile.url,
+      isVerified: true,
+    });
+    return res.status(201).json({ success: true, message: 'Certificate imported and available for verification', data: certificate });
+  } catch (error) {
+    if (storedFile?.id) await deleteStoredFile(storedFile.id).catch(() => {});
+    console.error('Certificate import error:', error.message);
+    return res.status(500).json({ success: false, message: 'Certificate could not be imported' });
+  }
 };
 
 export const verifyByInternshipId = async (req, res) => {

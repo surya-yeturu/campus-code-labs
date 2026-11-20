@@ -1,9 +1,12 @@
 import Note from '../models/Note.js';
 import Internship from '../models/Internship.js';
+import { uploadBuffer } from '../services/storageService.js';
 
 export const createNote = async (req, res) => {
   const { title, courseId, linkUrl } = req.body;
-  const fileUrl = req.file ? `/uploads/notes/${req.file.filename}` : '';
+  const fileUrl = req.file
+    ? (await uploadBuffer(req.file.buffer, 'notes', `${Date.now()}-${req.file.originalname}`, req.file.mimetype)).url
+    : '';
   if (!fileUrl && !linkUrl) {
     return res.status(400).json({ success: false, message: 'Upload a file or provide a link' });
   }
@@ -22,7 +25,14 @@ export const updateNote = async (req, res) => {
   if (title) update.title = title;
   if (linkUrl !== undefined) update.linkUrl = linkUrl;
   if (isActive !== undefined) update.isActive = isActive;
-  if (req.file) update.fileUrl = `/uploads/notes/${req.file.filename}`;
+  if (req.file) {
+    update.fileUrl = (await uploadBuffer(
+      req.file.buffer,
+      'notes',
+      `${Date.now()}-${req.file.originalname}`,
+      req.file.mimetype,
+    )).url;
+  }
   const note = await Note.findByIdAndUpdate(req.params.id, update, { new: true }).populate('course', 'title');
   if (!note) return res.status(404).json({ success: false, message: 'Note not found' });
   res.json({ success: true, data: note });
